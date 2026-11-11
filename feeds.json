@@ -1,0 +1,58 @@
+[
+  {
+    "name": "Gouvernement du Québec — fil de presse",
+    "url": "https://www.quebec.ca/fil-de-presse.rss",
+    "theme": "both",
+    "region": "Québec",
+    "kind": "official"
+  },
+  {
+    "name": "Gouvernement du Canada — nouvelles (français)",
+    "url": "https://api.io.canada.ca/io-server/gc/news/fr/v2?sort=publishedDate&orderBy=desc&pick=100&format=atom",
+    "theme": "both",
+    "region": "Canada",
+    "kind": "official"
+  },
+  {
+    "name": "Ministère de la Justice du Canada",
+    "url": "https://api.io.canada.ca/io-server/gc/news/fr/v2?atomtitle=Minist%C3%A8re+de+la+Justice+Canada&dept=departmentjustice&format=atom&orderBy=desc&pick=50&sort=publishedDate",
+    "theme": "civil_liberties",
+    "region": "Canada",
+    "kind": "official"
+  },
+  {
+    "name": "La Presse — environnement",
+    "url": "https://www.lapresse.ca/actualites/environnement/rss",
+    "theme": "environment",
+    "region": "Québec / international",
+    "kind": "media"
+  },
+  {
+    "name": "Google Actualités — droit de l'environnement et climat",
+    "url": "https://news.google.com/rss/search?q=(droit+environnemental+OR+changements+climatiques+OR+pollution+OR+biodiversit%C3%A9)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "environment",
+    "region": "Québec / Canada / international",
+    "kind": "search"
+  },
+  {
+    "name": "Google Actualités — libertés civiles et vie privée",
+    "url": "https://news.google.com/rss/search?q=(libert%C3%A9s+civiles+OR+vie+priv%C3%A9e+OR+surveillance+polici%C3%A8re+OR+reconnaissance+faciale)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "civil_liberties",
+    "region": "Québec / Canada / international",
+    "kind": "search"
+  },
+  {
+    "name": "Google Actualités — surveillance numérique et données",
+    "url": "https://news.google.com/rss/search?q=(Flock+cameras+OR+cam%C3%A9ras+de+surveillance+OR+protection+des+donn%C3%A9es+OR+surveillance+num%C3%A9rique)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "civil_liberties",
+    "region": "Québec / Canada / international",
+    "kind": "search"
+  },
+  {
+    "name": "Google Actualités — environnement international",
+    "url": "https://news.google.com/rss/search?q=(climate+law+OR+environmental+justice+OR+climate+litigation+OR+environmental+law)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "environment",
+    "region": "International",
+    "kind": "search"
+  }
+]
