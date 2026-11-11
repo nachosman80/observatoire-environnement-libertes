@@ -1,0 +1,48 @@
+
+name: Publier la veille
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 8 * * 2"
+      timezone: "America/Toronto"
+    - cron: "0 8 * * 5"
+      timezone: "America/Toronto"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+
+      - name: Installer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Construire le bulletin et le flux RSS
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+        run: python build.py
+
+      - name: Préparer GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Publier
+        uses: actions/deploy-pages@v4
