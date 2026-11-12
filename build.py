@@ -13,7 +13,7 @@ os.makedirs(OUT, exist_ok=True)
 SITE_URL = "https://nachosman80.github.io/observatoire-environnement-libertes/"
 MONTREAL_TZ = ZoneInfo("America/Toronto")
 HEADERS = {
-    "User-Agent": "ObservatoireCitoyen/1.6 (+https://github.com/nachosman80/observatoire-environnement-libertes)"
+    "User-Agent": "ObservatoireCitoyen/1.7 (+https://github.com/nachosman80/observatoire-environnement-libertes)"
 }
 
 KEYWORDS = {
@@ -114,7 +114,7 @@ def ai_summary(item):
         return None
     model = os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
     prompt = f"""Tu es analyste en droit public, environnement et libertés civiles. À partir UNIQUEMENT des informations ci-dessous
-(rédige entièrement en français, même si la source est en anglais), produis une fiche ULTRA-COURTE en 3 lignes maximum (sans blabla ni généralités) :
+(rédige entièrement en français, même si la source est en anglais), produis une fiche ULTRA-COURTE en 3 lignes maximum :
 
 **En bref :** [1 à 2 phrases factuelles maximum, 35 mots max]
 **Enjeu concret :** [1 phrase courte sur l'impact réel, la loi ou l'acteur concerné]
@@ -152,7 +152,6 @@ def fallback(item):
     angle = detect_angle(full_text)
     tags = extract_matched_keywords(full_text, item["theme"])
     short_excerpt = truncate_text(item["summary"], 240)
-    
     lines = [f"**Nature :** {angle}", f"**Notions :** {tags}"]
     if short_excerpt and short_excerpt.lower() != item["title"].lower():
         lines.append(f"**En bref :** {short_excerpt}")
@@ -179,13 +178,7 @@ def main():
 
     for f in feeds:
         section = f.get("section", "news")
-        if section == "memoires":
-            max_age_days = 30
-        elif section == "substack":
-            max_age_days = 14
-        else:
-            max_age_days = 5
-
+        max_age_days = 30 if section == "memoires" else (14 if section == "substack" else 5)
         try:
             resp = requests.get(f["url"], headers=HEADERS, timeout=20)
             resp.raise_for_status()
@@ -203,21 +196,13 @@ def main():
                     continue
                 seen.add(uid)
                 raw_date = e.get("published_parsed") or e.get("updated_parsed")
-                if raw_date:
-                    published = datetime.fromtimestamp(timegm(raw_date), timezone.utc)
-                else:
-                    published = now
+                published = datetime.fromtimestamp(timegm(raw_date), timezone.utc) if raw_date else now
                 if now - published > timedelta(days=max_age_days):
                     continue
                 summary = clean(e.get("summary") or e.get("description") or "")
                 text = f"{title} {summary}"
-                env = score(text, KEYWORDS["environment"])
-                civ = score(text, KEYWORDS["civil_liberties"])
-                declared = f.get("theme", "both")
-                if declared == "environment":
-                    env += 2
-                elif declared == "civil_liberties":
-                    civ += 2
+                env = score(text, KEYWORDS["environment"]) + (2 if f.get("theme") == "environment" else 0)
+                civ = score(text, KEYWORDS["civil_liberties"]) + (2 if f.get("theme") == "civil_liberties" else 0)
                 if max(env, civ) < 1:
                     continue
                 theme = "environment" if env >= civ else "civil_liberties"
@@ -254,8 +239,6 @@ def main():
     for item in all_selected:
         item["analysis"] = ai_summary(item) or fallback(item)
 
-    stamp = now_mtl.strftime("%d-%m-%Y à %H:%M (heure de Montréal)")
-
     def article_html(x):
         is_env = x["theme"] == "environment"
         theme_label = "Environnement" if is_env else "Libertés civiles"
@@ -270,20 +253,12 @@ def main():
             section_badge = '<span class="badge badge-mem">🏛️ Mémoire / Commission</span>'
 
         if x["image"]:
-            media_block = f"""<div class="card-media">
-                <img src="{html.escape(x['image'], quote=True)}" alt="" loading="lazy"
-                     onerror="this.parentElement.classList.add('{placeholder_class}'); this.outerHTML='<span class=\\'placeholder-icon\\'>{icon}</span><span class=\\'placeholder-label\\'>{html.escape(theme_label)}</span>';">
-            </div>"""
+            media_block = f'<div class="card-media"><img src="{html.escape(x["image"], quote=True)}" alt="" loading="lazy" onerror="this.parentElement.classList.add(\'{placeholder_class}\'); this.outerHTML=\'<span class=\\\'placeholder-icon\\\'>{icon}</span><span class=\\\'placeholder-label\\\'>{html.escape(theme_label)}</span>\';"></div>'
         else:
-            media_block = f"""<div class="card-media {placeholder_class}">
-                <span class="placeholder-icon">{icon}</span>
-                <span class="placeholder-label">{html.escape(theme_label)}</span>
-            </div>"""
+            media_block = f'<div class="card-media {placeholder_class}"><span class="placeholder-icon">{icon}</span><span class="placeholder-label">{html.escape(theme_label)}</span></div>'
 
         return f"""<article class="story" data-section="{html.escape(x['section'])}" data-theme="{html.escape(x['theme'])}" data-region="{html.escape(x['region'])}">
-            <a href="{html.escape(x['link'], quote=True)}" target="_blank" rel="noopener" class="media-link" aria-hidden="true" tabindex="-1">
-                {media_block}
-            </a>
+            <a href="{html.escape(x['link'], quote=True)}" target="_blank" rel="noopener" class="media-link" aria-hidden="true" tabindex="-1">{media_block}</a>
             <div class="card-body">
                 <div class="meta">
                     {section_badge}
@@ -301,81 +276,37 @@ def main():
         </article>"""
 
     cards = "\n".join(article_html(x) for x in all_selected)
-    warning = ("<div class='warning'>⚠️ Flux temporairement indisponibles : " +
-               ", ".join(html.escape(x) for x in failures) + "</div>") if failures else ""
+    warning = ("<div class='warning'>⚠️ Flux temporairement indisponibles : " + ", ".join(html.escape(x) for x in failures) + "</div>") if failures else ""
 
-    page = f"""<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Observatoire — Environnement & Libertés civiles</title>
-<link rel="alternate" type="application/rss+xml" title="Flux RSS" href="{SITE_URL}feed.xml">
-<script>
-  (function() {{
-    const saved = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (saved === 'dark' || (!saved && prefersDark)) {{
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }}
-  }})();
-</script>
-<style>
-  :root {{
-    --bg: #f4f6f9;
-    --surface: #ffffff;
-    --text: #18202c;
-    --text-muted: #5a6678;
-    --border: #e1e6ed;
-    --accent: #1456a0;
-    --accent-hover: #0e3f77;
-    --shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
-    --shadow-hover: 0 10px 26px rgba(15, 23, 42, 0.1);
-    --env-bg: #e6f4ea;
-    --env-text: #137333;
-    --civ-bg: #e8f0fe;
-    --civ-text: #1967d2;
-    --sub-bg: #fff0e6;
-    --sub-text: #c2410c;
-    --mem-bg: #f3e8ff;
-    --mem-text: #7e22ce;
-    --warn-bg: #fff8e1;
-    --warn-border: #ffe082;
-    --warn-text: #7a5901;
-  }}
+    with open(os.path.join(ROOT, "template.html"), encoding="utf-8") as tpl_file:
+        page = tpl_file.read()
 
-  [data-theme="dark"] {{
-    --bg: #0d1117;
-    --surface: #161b22;
-    --text: #e6edf3;
-    --text-muted: #8b949e;
-    --border: #2b323b;
-    --accent: #58a6ff;
-    --accent-hover: #79c0ff;
-    --shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
-    --shadow-hover: 0 10px 28px rgba(0, 0, 0, 0.55);
-    --env-bg: rgba(46, 160, 67, 0.18);
-    --env-text: #56d364;
-    --civ-bg: rgba(56, 139, 253, 0.18);
-    --civ-text: #79c0ff;
-    --sub-bg: rgba(251, 146, 60, 0.18);
-    --sub-text: #fb923c;
-    --mem-bg: rgba(168, 85, 247, 0.2);
-    --mem-text: #d8b4fe;
-    --warn-bg: rgba(187, 128, 9, 0.15);
-    --warn-border: rgba(187, 128, 9, 0.4);
-    --warn-text: #e3b341;
-  }}
+    replacements = {
+        "__SITE_URL__": SITE_URL,
+        "__DATE_COURTE__": now_mtl.strftime("%d-%m-%Y"),
+        "__COUNT_NEWS__": str(len(selected_news)),
+        "__COUNT_MEMOIRES__": str(len(selected_memoires)),
+        "__COUNT_SUBSTACK__": str(len(selected_substack)),
+        "__WARNING__": warning,
+        "__CARDS__": cards,
+        "__STAMP__": html.escape(now_mtl.strftime("%d-%m-%Y à %H:%M (heure de Montréal)"))
+    }
+    for k, v in replacements.items():
+        page = page.replace(k, v)
 
-  * {{ box-sizing: border-box; }}
+    with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as fp:
+        fp.write(page)
 
-  body {{
-    font: 15.5px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    margin: 0;
-    padding: 0;
-    color: var(--text);
-    background: var(--bg);
-    transition: background-color 0.25s ease, color 0.25s ease;
-  }}
+    rss_items = []
+    for x in all_selected:
+        prefix = "[Mémoire] " if x["section"] == "memoires" else ("[Substack] " if x["section"] == "substack" else "")
+        rss_items.append(f"<item><title>{prefix}[{html.escape(x['region'])}] {html.escape(x['title'])}</title><link>{html.escape(x['link'])}</link><guid isPermaLink='false'>{x['id']}</guid><pubDate>{format_datetime(x['published'])}</pubDate><description>{html.escape(x['analysis'])}</description><category>{html.escape(x['theme'])}</category></item>")
 
-  .container {{
+    rss = f'<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Observatoire — environnement et libertés civiles</title><link>{SITE_URL}</link><description>Veille quotidienne (Québec, Canada, États-Unis, Europe).</description><language>fr-ca</language><lastBuildDate>{format_datetime(now)}</lastBuildDate>{"".join(rss_items)}</channel></rss>'
+    with open(os.path.join(OUT, "feed.xml"), "w", encoding="utf-8") as fp:
+        fp.write(rss)
+
+    print(f"{len(selected_news)} actualités, {len(selected_memoires)} mémoires et {len(selected_substack)} billets Substack publiés; {len(failures)} flux en échec.")
+
+if __name__ == "__main__":
+    main()
