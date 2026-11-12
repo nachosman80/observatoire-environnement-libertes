@@ -82,10 +82,10 @@ def score(text, words):
     return sum(2 if len(w) > 12 and w in t else 1 for w in words if w in t)
 
 def ai_summary(item):
-    key = os.getenv("OPENAI_API_KEY")
+    key = os.getenv("GEMINI_API_KEY")
     if not key:
         return None
-    model = os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
+    model = os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
     prompt = f"""Tu es documentaliste juridique francophone. À partir uniquement des informations ci-dessous
 (même si elles sont en anglais, rédige entièrement en français), produis :
 1) **Résumé disponible :** un résumé factuel de 3 à 4 phrases;
@@ -103,22 +103,25 @@ Date : {item['date']}
 Extrait : {item['summary']}
 Lien : {item['link']}"""
     try:
+        import time
+        time.sleep(2)  # Respecte la limite de requêtes par minute du niveau gratuit
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
         r = requests.post(
-            "https://api.openai.com/v1/responses",
-            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            json={"model": model, "input": prompt},
+            url,
+            headers={"Content-Type": "application/json"},
+            json={"contents": [{"parts": [{"text": prompt}]}]},
             timeout=60
         )
         r.raise_for_status()
         data = r.json()
-        chunks = []
-        for out in data.get("output", []):
-            for c in out.get("content", []):
-                if c.get("type") == "output_text":
-                    chunks.append(c.get("text", ""))
-        return "\n\n".join(chunks).strip() or None
+        candidates = data.get("candidates", [])
+        if candidates:
+            parts = candidates[0].get("content", {}).get("parts", [])
+            text = "".join(p.get("text", "") for p in parts).strip()
+            return text or None
+        return None
     except Exception as e:
-        print("IA indisponible pour un article:", e)
+        print("IA Gemini indisponible pour un article:", e)
         return None
 
 def fallback(item):
