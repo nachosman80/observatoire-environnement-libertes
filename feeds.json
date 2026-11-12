@@ -4,76 +4,196 @@
     "url": "https://www.quebec.ca/fil-de-presse.rss",
     "theme": "both",
     "region": "Québec",
-    "kind": "official"
+    "section": "news"
   },
   {
-    "name": "Gouvernement du Canada — nouvelles (français)",
-    "url": "https://api.io.canada.ca/io-server/gc/news/fr/v2?sort=publishedDate&orderBy=desc&pick=100&format=atom",
+    "name": "Équiterre — défense environnementale",
+    "url": "https://www.equiterre.org/fr/rss.xml",
+    "theme": "environment",
+    "region": "Québec",
+    "section": "news"
+  },
+  {
+    "name": "Nature Québec — actualités",
+    "url": "https://naturequebec.org/feed/",
+    "theme": "environment",
+    "region": "Québec",
+    "section": "news"
+  },
+  {
+    "name": "Pivot — média indépendant (Québec)",
+    "url": "https://pivot.quebec/feed/",
     "theme": "both",
-    "region": "Canada",
-    "kind": "official"
-  },
-  {
-    "name": "Ministère de la Justice du Canada",
-    "url": "https://api.io.canada.ca/io-server/gc/news/fr/v2?atomtitle=Minist%C3%A8re+de+la+Justice+Canada&dept=departmentjustice&format=atom&orderBy=desc&pick=50&sort=publishedDate",
-    "theme": "civil_liberties",
-    "region": "Canada",
-    "kind": "official"
+    "region": "Québec",
+    "section": "news"
   },
   {
     "name": "La Presse — environnement",
     "url": "https://www.lapresse.ca/actualites/environnement/rss",
     "theme": "environment",
     "region": "Québec / Canada",
-    "kind": "media"
+    "section": "news"
+  },
+  {
+    "name": "Ecojustice — droit de l'environnement (Canada)",
+    "url": "https://ecojustice.ca/feed/",
+    "theme": "environment",
+    "region": "Canada",
+    "section": "news"
+  },
+  {
+    "name": "Fondation David Suzuki — climat et nature",
+    "url": "https://davidsuzuki.org/fr/feed/",
+    "theme": "environment",
+    "region": "Canada",
+    "section": "news"
+  },
+  {
+    "name": "The Narwhal — enquêtes environnementales",
+    "url": "https://thenarwhal.ca/feed/",
+    "theme": "environment",
+    "region": "Canada",
+    "section": "news"
+  },
+  {
+    "name": "CCLA — Association canadienne des libertés civiles",
+    "url": "https://ccla.org/feed/",
+    "theme": "civil_liberties",
+    "region": "Canada",
+    "section": "news"
+  },
+  {
+    "name": "Gouvernement du Canada — nouvelles (français)",
+    "url": "https://api.io.canada.ca/io-server/gc/news/fr/v2?sort=publishedDate&orderBy=desc&pick=100&format=atom",
+    "theme": "both",
+    "region": "Canada",
+    "section": "news"
+  },
+  {
+    "name": "350.org — mouvement climatique international",
+    "url": "https://350.org/feed/",
+    "theme": "environment",
+    "region": "États-Unis",
+    "section": "news"
+  },
+  {
+    "name": "Sierra Club — défense du climat (USA)",
+    "url": "https://www.sierraclub.org/rss.xml",
+    "theme": "environment",
+    "region": "États-Unis",
+    "section": "news"
+  },
+  {
+    "name": "EFF — Electronic Frontier Foundation",
+    "url": "https://www.eff.org/rss/updates.xml",
+    "theme": "civil_liberties",
+    "region": "États-Unis",
+    "section": "news"
+  },
+  {
+    "name": "Grist — climat et justice environnementale",
+    "url": "https://grist.org/feed/",
+    "theme": "environment",
+    "region": "États-Unis",
+    "section": "news"
+  },
+  {
+    "name": "ClientEarth — juristes pour la planète",
+    "url": "https://www.clientearth.org/latest/latest-updates/feed/",
+    "theme": "environment",
+    "region": "Europe",
+    "section": "news"
+  },
+  {
+    "name": "Réseau Action Climat — France & Europe",
+    "url": "https://reseauactionclimat.org/feed/",
+    "theme": "environment",
+    "region": "Europe",
+    "section": "news"
+  },
+  {
+    "name": "Reporterre — le média de l'écologie",
+    "url": "https://reporterre.net/spip.php?page=backend",
+    "theme": "environment",
+    "region": "Europe",
+    "section": "news"
+  },
+  {
+    "name": "La Quadrature du Net — libertés numériques",
+    "url": "https://www.laquadrature.net/feed/",
+    "theme": "civil_liberties",
+    "region": "Europe",
+    "section": "news"
   },
   {
     "name": "Google Actualités — Québec & Canada (Environnement FR)",
     "url": "https://news.google.com/rss/search?q=(%22droit+de+l%27environnement%22+OR+%22changements+climatiques%22+OR+pollution+OR+biodiversit%C3%A9+OR+BAPE)+when:3d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "environment",
     "region": "Québec / Canada",
-    "kind": "search"
+    "section": "news"
   },
   {
     "name": "Google Actualités — Québec & Canada (Libertés civiles FR)",
     "url": "https://news.google.com/rss/search?q=(%22libert%C3%A9s+civiles%22+OR+%22vie+priv%C3%A9e%22+OR+%22surveillance+polici%C3%A8re%22+OR+%22reconnaissance+faciale%22+OR+%22droits+fondamentaux%22)+when:3d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "civil_liberties",
     "region": "Québec / Canada",
-    "kind": "search"
+    "section": "news"
+  },
+
+  {
+    "name": "HEATED — Emily Atkin (Substack Climat)",
+    "url": "https://heated.world/feed",
+    "theme": "environment",
+    "region": "États-Unis",
+    "section": "substack"
   },
   {
-    "name": "Google News — Canada (Environment & Civil Liberties EN)",
-    "url": "https://news.google.com/rss/search?q=(%22environmental+law%22+OR+%22climate+litigation%22+OR+%22civil+liberties%22+OR+%22privacy+rights%22+OR+%22facial+recognition%22)+when:3d&hl=en-CA&gl=CA&ceid=CA:en",
-    "theme": "both",
+    "name": "The Crucial Years — Bill McKibben (Substack Climat)",
+    "url": "https://billmckibben.substack.com/feed",
+    "theme": "environment",
+    "region": "États-Unis",
+    "section": "substack"
+  },
+  {
+    "name": "The Planet — Eric Holthaus (Substack Climat)",
+    "url": "https://www.theplanet.earth/feed",
+    "theme": "environment",
+    "region": "États-Unis",
+    "section": "substack"
+  },
+  {
+    "name": "Tech Policy Press — Gouvernance & Libertés",
+    "url": "https://www.techpolicy.press/feed/",
+    "theme": "civil_liberties",
+    "region": "États-Unis",
+    "section": "substack"
+  },
+  {
+    "name": "Platformer — Casey Newton (Substack Tech & Droits)",
+    "url": "https://www.platformer.news/feed",
+    "theme": "civil_liberties",
+    "region": "États-Unis",
+    "section": "substack"
+  },
+  {
+    "name": "Bon Pote — Climat & Société (Blogue/Analyse)",
+    "url": "https://bonpote.com/feed/",
+    "theme": "environment",
+    "region": "Europe",
+    "section": "substack"
+  },
+  {
+    "name": "Substack — Découvertes Environnement & Climat (FR/EN)",
+    "url": "https://news.google.com/rss/search?q=site:substack.com+(climat+OR+%C3%A9cologie+OR+%22climate+crisis%22+OR+%22environmental+justice%22)+when:14d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "environment",
     "region": "Canada",
-    "kind": "search"
+    "section": "substack"
   },
   {
-    "name": "Google News — USA (Environment & Climate Law)",
-    "url": "https://news.google.com/rss/search?q=(%22environmental+law%22+OR+%22climate+litigation%22+OR+EPA+regulation+OR+%22environmental+justice%22)+when:3d&hl=en-US&gl=US&ceid=US:en",
-    "theme": "environment",
-    "region": "États-Unis",
-    "kind": "search"
-  },
-  {
-    "name": "Google News — USA (Civil Liberties & Surveillance)",
-    "url": "https://news.google.com/rss/search?q=(%22civil+liberties%22+OR+%22Flock+cameras%22+OR+%22police+surveillance%22+OR+%22data+privacy%22+OR+%22Fourth+Amendment%22+OR+ACLU)+when:3d&hl=en-US&gl=US&ceid=US:en",
+    "name": "Substack — Découvertes Libertés civiles & Surveillance (FR/EN)",
+    "url": "https://news.google.com/rss/search?q=site:substack.com+(%22civil+liberties%22+OR+%22vie+priv%C3%A9e%22+OR+surveillance+OR+%22digital+rights%22)+when:14d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "civil_liberties",
-    "region": "États-Unis",
-    "kind": "search"
-  },
-  {
-    "name": "Google Actualités — Europe (Environnement & Climat FR)",
-    "url": "https://news.google.com/rss/search?q=(%22droit+de+l%27environnement%22+OR+%22justice+climatique%22+OR+CEDH+climat+OR+%22Pacte+vert%22)+when:3d&hl=fr&gl=FR&ceid=FR:fr",
-    "theme": "environment",
-    "region": "Europe",
-    "kind": "search"
-  },
-  {
-    "name": "Google Actualités — Europe (Libertés & Numérique FR/EN)",
-    "url": "https://news.google.com/rss/search?q=(RGPD+OR+GDPR+OR+CEDH+OR+%22surveillance+biom%C3%A9trique%22+OR+%22digital+rights%22+OR+%22AI+Act%22+privacy)+when:3d&hl=fr&gl=FR&ceid=FR:fr",
-    "theme": "civil_liberties",
-    "region": "Europe",
-    "kind": "search"
+    "region": "Canada",
+    "section": "substack"
   }
 ]
