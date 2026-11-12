@@ -242,7 +242,7 @@ def main():
         </article>"""
 
     cards = "\n".join(article_html(x) for x in selected)
-    warning = ("<div class='warning'>⚠️ Flux temporairement indisponibles : " +
+warning = ("<div class='warning'>⚠️ Flux temporairement indisponibles : " +
                ", ".join(html.escape(x) for x in failures) + "</div>") if failures else ""
 
     page = f"""<!doctype html>
@@ -265,7 +265,6 @@ def main():
   :root {{
     --bg: #f4f6f9;
     --surface: #ffffff;
-    --surface-hover: #fcfdfe;
     --text: #18202c;
     --text-muted: #5a6678;
     --border: #e1e6ed;
@@ -285,7 +284,6 @@ def main():
   [data-theme="dark"] {{
     --bg: #0d1117;
     --surface: #161b22;
-    --surface-hover: #1c222b;
     --text: #e6edf3;
     --text-muted: #8b949e;
     --border: #2b323b;
@@ -334,3 +332,390 @@ def main():
     letter-spacing: -0.02em;
     margin: 0 0 0.25rem;
     line-height: 1.2;
+  }}
+
+  .brand p {{
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }}
+
+  .header-actions {{
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-shrink: 0;
+  }}
+
+  .btn-icon {{
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }}
+
+  .btn-icon:hover {{
+    border-color: var(--accent);
+    color: var(--accent);
+  }}
+
+  .intro {{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    box-shadow: var(--shadow);
+  }}
+
+  .intro-text strong {{
+    font-size: 1.05rem;
+    display: block;
+    margin-bottom: 0.2rem;
+  }}
+
+  .intro-text p {{
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }}
+
+  .toolbar {{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.25rem 0 1.5rem;
+  }}
+
+  .filters {{
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }}
+
+  .filters button {{
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: all 0.18s ease;
+  }}
+
+  .filters button:hover {{ border-color: var(--accent); }}
+
+  .filters button.active {{
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+  }}
+
+  [data-theme="dark"] .filters button.active {{ color: #0d1117; }}
+
+  .region-select {{
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+  }}
+
+  .grid {{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+    gap: 1.5rem;
+  }}
+
+  @media (max-width: 540px) {{
+    .grid {{ grid-template-columns: 1fr; }}
+    header {{ flex-direction: column; }}
+  }}
+
+  .story {{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }}
+
+  .story:hover {{
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--accent);
+  }}
+
+  .media-link {{ display: block; text-decoration: none; }}
+
+  .card-media {{
+    width: 100%;
+    height: 195px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--border);
+  }}
+
+  .card-media img {{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+  }}
+
+  .story:hover .card-media img {{ transform: scale(1.03); }}
+
+  .placeholder-env {{
+    background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 55%, #40916c 100%);
+    color: #ffffff;
+  }}
+
+  .placeholder-civ {{
+    background: linear-gradient(135deg, #1e293b 0%, #1d4ed8 60%, #3b82f6 100%);
+    color: #ffffff;
+  }}
+
+  .placeholder-icon {{
+    font-size: 2.5rem;
+    margin-bottom: 0.35rem;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+  }}
+
+  .placeholder-label {{
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.9;
+  }}
+
+  .card-body {{
+    padding: 1.35rem 1.45rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }}
+
+  .meta {{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.65rem;
+  }}
+
+  .badge {{
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.76rem;
+  }}
+
+  .badge-env {{ background: var(--env-bg); color: var(--env-text); }}
+  .badge-civ {{ background: var(--civ-bg); color: var(--civ-text); }}
+  .region-tag {{ font-weight: 600; color: var(--text); }}
+
+  h2 {{
+    font-size: 1.18rem;
+    line-height: 1.35;
+    margin: 0 0 0.4rem;
+    font-weight: 700;
+  }}
+
+  h2 a {{ color: var(--text); text-decoration: none; }}
+  h2 a:hover {{ color: var(--accent); }}
+
+  .source {{
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+    font-style: italic;
+  }}
+
+  .analysis {{
+    font-size: 0.93rem;
+    line-height: 1.6;
+    color: var(--text);
+    border-top: 1px solid var(--border);
+    padding-top: 0.95rem;
+    flex-grow: 1;
+  }}
+
+  .card-footer {{
+    margin-top: 1.2rem;
+    padding-top: 0.85rem;
+    border-top: 1px dashed var(--border);
+    display: flex;
+    justify-content: flex-end;
+  }}
+
+  .read-more {{
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }}
+
+  .read-more:hover {{ color: var(--accent-hover); text-decoration: underline; }}
+
+  .warning {{
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border: 1px solid var(--warn-border);
+    padding: 0.9rem 1.2rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }}
+
+  footer {{
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <h1>Observatoire citoyen</h1>
+      <p>Environnement · Libertés civiles · Droit public (Québec, Canada, États-Unis, Europe)</p>
+    </div>
+    <div class="header-actions">
+      <a class="btn-icon" href="feed.xml" title="Flux RSS">📡 Flux RSS</a>
+      <button class="btn-icon" id="theme-toggle" onclick="toggleTheme()" aria-label="Basculer le mode nuit">
+        <span id="theme-icon">🌙</span> <span id="theme-text">Mode nuit</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="intro">
+    <div class="intro-text">
+      <strong>Bulletin quotidien du {now_mtl.strftime('%d-%m-%Y')}</strong>
+      <p>Sélection bilingue (FR/EN) équilibrée entre enjeux écologiques et droits fondamentaux. Analyses générées automatiquement à vérifier à la source.</p>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <div class="filters">
+      <button class="active" data-filter="all" onclick="setThemeFilter('all', this)">Tous ({len(selected)})</button>
+      <button data-filter="environment" onclick="setThemeFilter('environment', this)">🌿 Environnement ({len([x for x in selected if x['theme']=='environment'])})</button>
+      <button data-filter="civil_liberties" onclick="setThemeFilter('civil_liberties', this)">⚖️ Libertés civiles ({len([x for x in selected if x['theme']=='civil_liberties'])})</button>
+    </div>
+    <select class="region-select" id="region-filter" onchange="applyFilters()" aria-label="Filtrer par région">
+      <option value="all">🌍 Toutes les régions</option>
+      <option value="Québec">Québec</option>
+      <option value="Canada">Canada</option>
+      <option value="États-Unis">États-Unis</option>
+      <option value="Europe">Europe</option>
+    </select>
+  </div>
+
+  {warning}
+
+  <main class="grid" id="stories-grid">
+    {cards or '<p>Aucun article pertinent trouvé pour cette exécution.</p>'}
+  </main>
+
+  <footer>
+    Généré automatiquement le {html.escape(stamp)}. Outil de veille documentaire — ne constitue pas un avis juridique.<br>
+    Vérifiez toujours les sources originales avant toute utilisation ou citation.
+  </footer>
+</div>
+
+<script>
+  let currentThemeFilter = 'all';
+
+  function updateThemeButton() {{
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
+    document.getElementById('theme-text').textContent = isDark ? 'Mode jour' : 'Mode nuit';
+  }}
+
+  function toggleTheme() {{
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateThemeButton();
+  }}
+
+  function setThemeFilter(theme, btn) {{
+    currentThemeFilter = theme;
+    document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilters();
+  }}
+
+  function applyFilters() {{
+    const regionVal = document.getElementById('region-filter').value;
+    document.querySelectorAll('.story').forEach(el => {{
+      const matchTheme = (currentThemeFilter === 'all' || el.dataset.theme === currentThemeFilter);
+      const matchRegion = (regionVal === 'all' || el.dataset.region.includes(regionVal));
+      el.style.display = (matchTheme && matchRegion) ? 'flex' : 'none';
+    }});
+  }}
+
+  updateThemeButton();
+</script>
+</body>
+</html>"""
+
+    with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as fp:
+        fp.write(page)
+
+    rss_items = []
+    for x in selected:
+        desc = html.escape(x["analysis"])
+        pub = format_datetime(x["published"])
+        rss_items.append(f"""<item><title>[{html.escape(x['region'])}] {html.escape(x['title'])}</title>
+        <link>{html.escape(x['link'])}</link><guid isPermaLink="false">{x['id']}</guid>
+        <pubDate>{pub}</pubDate><description>{desc}</description>
+        <category>{html.escape(x['theme'])}</category></item>""")
+
+    rss = f"""<?xml version="1.0" encoding="UTF-8"?>
+    <rss version="2.0"><channel><title>Observatoire — environnement et libertés civiles</title>
+    <link>{SITE_URL}</link><description>Veille quotidienne (Québec, Canada, États-Unis, Europe) sur l'environnement et les libertés civiles.</description>
+    <language>fr-ca</language><lastBuildDate>{format_datetime(now)}</lastBuildDate>
+    {''.join(rss_items)}</channel></rss>"""
+
+    with open(os.path.join(OUT, "feed.xml"), "w", encoding="utf-8") as fp:
+        fp.write(rss)
+
+    print(f"{len(selected)} articles publiés; {len(failures)} flux en échec.")
+
+if __name__ == "__main__":
+    main()
