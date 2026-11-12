@@ -1,4 +1,4 @@
-import os, re, json, html, hashlib
+import os, re, json, html, hashlib, time
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 from email.utils import format_datetime
@@ -13,7 +13,7 @@ os.makedirs(OUT, exist_ok=True)
 SITE_URL = "https://nachosman80.github.io/observatoire-environnement-libertes/"
 MONTREAL_TZ = ZoneInfo("America/Toronto")
 HEADERS = {
-    "User-Agent": "ObservatoireCitoyen/1.5 (+https://github.com/nachosman80/observatoire-environnement-libertes)"
+    "User-Agent": "ObservatoireCitoyen/1.6 (+https://github.com/nachosman80/observatoire-environnement-libertes)"
 }
 
 KEYWORDS = {
@@ -47,6 +47,12 @@ KEYWORDS = {
 
 def clean(s):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", str(s or ""))).strip()
+
+def truncate_text(text, max_len=240):
+    if not text or len(text) <= max_len:
+        return text
+    cut = text[:max_len].rsplit(" ", 1)[0]
+    return cut.rstrip(".,;:") + "…"
 
 def extract_image(entry):
     for key in ("media_content", "media_thumbnail"):
@@ -99,8 +105,7 @@ def detect_angle(text):
 def extract_matched_keywords(text, theme):
     t = text.casefold()
     matched = [w.capitalize() for w in KEYWORDS[theme] if w in t]
-    # Garder les 5 mots-clés les plus pertinents sans doublons
-    unique = list(dict.fromkeys(matched))[:5]
+    unique = list(dict.fromkeys(matched))[:4]
     return " · ".join(unique) if unique else "Thème général"
 
 def ai_summary(item):
@@ -109,20 +114,19 @@ def ai_summary(item):
         return None
     model = os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
     prompt = f"""Tu es analyste en droit public, environnement et libertés civiles. À partir UNIQUEMENT des informations ci-dessous
-(rédige entièrement en français, même si la source est en anglais), sois ultra-concis, factuel et évite toute généralité vague :
+(rédige entièrement en français, même si la source est en anglais), produis une fiche ULTRA-COURTE en 3 lignes maximum (sans blabla ni généralités) :
 
-1) **L'essentiel :** résume les faits en 2 à 3 phrases directes.
-2) **Ce qui est en jeu :** identifie précisément l'impact concret (droits visés, territoire, technologie ou pouvoir en cause) et nomme l'institution, la loi ou l'acteur concerné s'ils apparaissent dans le texte. Pas de phrases creuses.
-3) **Levier ou suite :** indique la prochaine étape (audience, vote, décision attendue, consultation) ou ce qu'il faut vérifier dans l'article complet.
+**En bref :** [1 à 2 phrases factuelles maximum, 35 mots max]
+**Enjeu concret :** [1 phrase courte sur l'impact réel, la loi ou l'acteur concerné]
+**À suivre :** [1 question ou étape concrète en moins de 15 mots]
 
-N'invente rien. Si l'extrait est trop court pour déterminer un point, dis-le en une courte phrase.
+N'invente rien.
 
 Titre : {item['title']}
 Région : {item['region']}
 Source : {item['source']}
 Extrait : {item['summary']}"""
     try:
-        import time
         time.sleep(2)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
         r = requests.post(
@@ -147,12 +151,12 @@ def fallback(item):
     full_text = f"{item['title']} {item['summary']}"
     angle = detect_angle(full_text)
     tags = extract_matched_keywords(full_text, item["theme"])
-    excerpt = item["summary"]
+    short_excerpt = truncate_text(item["summary"], 240)
     
-    lines = [f"**Nature :** {angle}", f"**Notions repérées :** {tags}"]
-    if excerpt and excerpt.lower() != item["title"].lower():
-        lines.append(f"**Extrait :** {excerpt}")
-    return "\n\n".join(lines)
+    lines = [f"**Nature :** {angle}", f"**Notions :** {tags}"]
+    if short_excerpt and short_excerpt.lower() != item["title"].lower():
+        lines.append(f"**En bref :** {short_excerpt}")
+    return "\n".join(lines)
 
 def select_balanced(pool, per_theme_limit):
     pool.sort(key=lambda x: (x["score"], x["published"]), reverse=True)
@@ -223,7 +227,7 @@ def main():
                     "title": title,
                     "link": link,
                     "image": extract_image(e),
-                    "summary": summary[:1400],
+                    "summary": summary[:1000],
                     "source": f["name"],
                     "region": f.get("region", ""),
                     "section": section,
@@ -366,7 +370,7 @@ def main():
   * {{ box-sizing: border-box; }}
 
   body {{
-    font: 15.5px/1.65 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font: 15.5px/1.6 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     margin: 0;
     padding: 0;
     color: var(--text);
@@ -375,502 +379,3 @@ def main():
   }}
 
   .container {{
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 1.5rem 1.25rem 3rem;
-  }}
-
-  header {{
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1rem 0 1.5rem;
-    border-bottom: 1px solid var(--border);
-  }}
-
-  .brand h1 {{
-    font-size: 1.85rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    margin: 0 0 0.25rem;
-    line-height: 1.2;
-  }}
-
-  .brand p {{
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 0.95rem;
-  }}
-
-  .header-actions {{
-    display: flex;
-    gap: 0.6rem;
-    align-items: center;
-    flex-shrink: 0;
-  }}
-
-  .btn-icon {{
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.5rem 0.85rem;
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    text-decoration: none;
-    transition: all 0.2s ease;
-  }}
-
-  .btn-icon:hover {{
-    border-color: var(--accent);
-    color: var(--accent);
-  }}
-
-  .intro {{
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 1.25rem 1.5rem;
-    margin: 1.5rem 0;
-    box-shadow: var(--shadow);
-  }}
-
-  .intro-text strong {{
-    font-size: 1.05rem;
-    display: block;
-    margin-bottom: 0.2rem;
-  }}
-
-  .intro-text p {{
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 0.92rem;
-  }}
-
-  .main-tabs {{
-    display: flex;
-    gap: 0.5rem;
-    border-bottom: 2px solid var(--border);
-    margin: 1.5rem 0 1.25rem;
-    overflow-x: auto;
-  }}
-
-  .tab-btn {{
-    background: transparent;
-    color: var(--text-muted);
-    border: none;
-    border-bottom: 3px solid transparent;
-    padding: 0.7rem 1.1rem;
-    font-size: 0.96rem;
-    font-weight: 700;
-    cursor: pointer;
-    margin-bottom: -2px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    white-space: nowrap;
-  }}
-
-  .tab-btn:hover {{
-    color: var(--text);
-  }}
-
-  .tab-btn.active {{
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }}
-
-  .tab-count {{
-    background: var(--border);
-    color: var(--text);
-    font-size: 0.76rem;
-    padding: 0.12rem 0.5rem;
-    border-radius: 999px;
-  }}
-
-  .tab-btn.active .tab-count {{
-    background: var(--accent);
-    color: #ffffff;
-  }}
-
-  [data-theme="dark"] .tab-btn.active .tab-count {{
-    color: #0d1117;
-  }}
-
-  .toolbar {{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 1rem 0 1.5rem;
-  }}
-
-  .filters {{
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }}
-
-  .filters button {{
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 0.42rem 0.95rem;
-    cursor: pointer;
-    font-size: 0.86rem;
-    font-weight: 600;
-    transition: all 0.18s ease;
-  }}
-
-  .filters button:hover {{ border-color: var(--accent); }}
-
-  .filters button.active {{
-    background: var(--accent);
-    color: #ffffff;
-    border-color: var(--accent);
-  }}
-
-  [data-theme="dark"] .filters button.active {{ color: #0d1117; }}
-
-  .region-select {{
-    background: var(--surface);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 0.42rem 0.85rem;
-    font-size: 0.86rem;
-    font-weight: 500;
-    cursor: pointer;
-  }}
-
-  .grid {{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
-    gap: 1.5rem;
-  }}
-
-  @media (max-width: 540px) {{
-    .grid {{ grid-template-columns: 1fr; }}
-    header {{ flex-direction: column; }}
-  }}
-
-  .story {{
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--shadow);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  }}
-
-  .story:hover {{
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-hover);
-    border-color: var(--accent);
-  }}
-
-  .media-link {{ display: block; text-decoration: none; }}
-
-  .card-media {{
-    width: 100%;
-    height: 195px;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--border);
-  }}
-
-  .card-media img {{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.35s ease;
-  }}
-
-  .story:hover .card-media img {{ transform: scale(1.03); }}
-
-  .placeholder-env {{
-    background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 55%, #40916c 100%);
-    color: #ffffff;
-  }}
-
-  .placeholder-civ {{
-    background: linear-gradient(135deg, #1e293b 0%, #1d4ed8 60%, #3b82f6 100%);
-    color: #ffffff;
-  }}
-
-  .placeholder-icon {{
-    font-size: 2.5rem;
-    margin-bottom: 0.35rem;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
-  }}
-
-  .placeholder-label {{
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    opacity: 0.9;
-  }}
-
-  .card-body {{
-    padding: 1.35rem 1.45rem;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-  }}
-
-  .meta {{
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-bottom: 0.65rem;
-  }}
-
-  .badge {{
-    padding: 0.2rem 0.6rem;
-    border-radius: 6px;
-    font-weight: 700;
-    font-size: 0.76rem;
-  }}
-
-  .badge-env {{ background: var(--env-bg); color: var(--env-text); }}
-  .badge-civ {{ background: var(--civ-bg); color: var(--civ-text); }}
-  .badge-sub {{ background: var(--sub-bg); color: var(--sub-text); }}
-  .badge-mem {{ background: var(--mem-bg); color: var(--mem-text); }}
-  .region-tag {{ font-weight: 600; color: var(--text); }}
-
-  h2 {{
-    font-size: 1.18rem;
-    line-height: 1.35;
-    margin: 0 0 0.4rem;
-    font-weight: 700;
-  }}
-
-  h2 a {{ color: var(--text); text-decoration: none; }}
-  h2 a:hover {{ color: var(--accent); }}
-
-  .source {{
-    font-size: 0.83rem;
-    color: var(--text-muted);
-    margin: 0 0 1rem;
-    font-style: italic;
-  }}
-
-  .analysis {{
-    font-size: 0.93rem;
-    line-height: 1.6;
-    color: var(--text);
-    border-top: 1px solid var(--border);
-    padding-top: 0.95rem;
-    flex-grow: 1;
-  }}
-
-  .card-footer {{
-    margin-top: 1.2rem;
-    padding-top: 0.85rem;
-    border-top: 1px dashed var(--border);
-    display: flex;
-    justify-content: flex-end;
-  }}
-
-  .read-more {{
-    color: var(--accent);
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-  }}
-
-  .read-more:hover {{ color: var(--accent-hover); text-decoration: underline; }}
-
-  .warning {{
-    background: var(--warn-bg);
-    color: var(--warn-text);
-    border: 1px solid var(--warn-border);
-    padding: 0.9rem 1.2rem;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-  }}
-
-  .empty-state {{
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 2.5rem;
-    background: var(--surface);
-    border: 1px dashed var(--border);
-    border-radius: 14px;
-    color: var(--text-muted);
-    display: none;
-  }}
-
-  footer {{
-    font-size: 0.84rem;
-    color: var(--text-muted);
-    margin-top: 3rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
-    text-align: center;
-  }}
-</style>
-</head>
-<body>
-<div class="container">
-  <header>
-    <div class="brand">
-      <h1>Observatoire citoyen</h1>
-      <p>Environnement · Libertés civiles · Droit public (Québec, Canada, États-Unis, Europe)</p>
-    </div>
-    <div class="header-actions">
-      <a class="btn-icon" href="feed.xml" title="Flux RSS">📡 Flux RSS</a>
-      <button class="btn-icon" id="theme-toggle" onclick="toggleTheme()" aria-label="Basculer le mode nuit">
-        <span id="theme-icon">🌙</span> <span id="theme-text">Mode nuit</span>
-      </button>
-    </div>
-  </header>
-
-  <section class="intro">
-    <div class="intro-text">
-      <strong>Bulletin quotidien du {now_mtl.strftime('%d-%m-%Y')}</strong>
-      <p>Veille bilingue (FR/EN) croisant médias indépendants, organisations climatiques, mémoires parlementaires, essais Substack et radars de découverte.</p>
-    </div>
-  </section>
-
-  <nav class="main-tabs" role="tablist">
-    <button class="tab-btn active" role="tab" onclick="setSection('news', this)">
-      📰 Actualités & Organisations <span class="tab-count">{len(selected_news)}</span>
-    </button>
-    <button class="tab-btn" role="tab" onclick="setSection('memoires', this)">
-      🏛️ Mémoires & Consultations <span class="tab-count">{len(selected_memoires)}</span>
-    </button>
-    <button class="tab-btn" role="tab" onclick="setSection('substack', this)">
-      ✍️ Analyses & Substack <span class="tab-count">{len(selected_substack)}</span>
-    </button>
-  </nav>
-
-  <div class="toolbar">
-    <div class="filters">
-      <button class="active" data-filter="all" onclick="setThemeFilter('all', this)">Tous les thèmes</button>
-      <button data-filter="environment" onclick="setThemeFilter('environment', this)">🌿 Environnement</button>
-      <button data-filter="civil_liberties" onclick="setThemeFilter('civil_liberties', this)">⚖️ Libertés civiles</button>
-    </div>
-    <select class="region-select" id="region-filter" onchange="applyFilters()" aria-label="Filtrer par région">
-      <option value="all">🌍 Toutes les régions</option>
-      <option value="Québec">Québec</option>
-      <option value="Canada">Canada</option>
-      <option value="États-Unis">États-Unis</option>
-      <option value="Europe">Europe</option>
-    </select>
-  </div>
-
-  {warning}
-
-  <main class="grid" id="stories-grid">
-    {cards}
-    <div class="empty-state" id="empty-state">Aucune publication ne correspond à cette combinaison de filtres dans cet onglet.</div>
-  </main>
-
-  <footer>
-    Généré automatiquement le {html.escape(stamp)}. Outil de veille documentaire — ne constitue pas un avis juridique.<br>
-    Vérifiez toujours les sources originales avant toute utilisation ou citation.
-  </footer>
-</div>
-
-<script>
-  let currentSection = 'news';
-  let currentThemeFilter = 'all';
-
-  function updateThemeButton() {{
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
-    document.getElementById('theme-text').textContent = isDark ? 'Mode jour' : 'Mode nuit';
-  }}
-
-  function toggleTheme() {{
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const next = isDark ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('theme', next);
-    updateThemeButton();
-  }}
-
-  function setSection(section, btn) {{
-    currentSection = section;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    applyFilters();
-  }}
-
-  function setThemeFilter(theme, btn) {{
-    currentThemeFilter = theme;
-    document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    applyFilters();
-  }}
-
-  function applyFilters() {{
-    const regionVal = document.getElementById('region-filter').value;
-    let visibleCount = 0;
-    document.querySelectorAll('.story').forEach(el => {{
-      const matchSection = (el.dataset.section === currentSection);
-      const matchTheme = (currentThemeFilter === 'all' || el.dataset.theme === currentThemeFilter);
-      const matchRegion = (regionVal === 'all' || el.dataset.region.includes(regionVal));
-      const show = (matchSection && matchTheme && matchRegion);
-      el.style.display = show ? 'flex' : 'none';
-      if (show) visibleCount++;
-    }});
-    document.getElementById('empty-state').style.display = (visibleCount === 0) ? 'block' : 'none';
-  }}
-
-  updateThemeButton();
-  applyFilters();
-</script>
-</body>
-</html>"""
-
-    with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8") as fp:
-        fp.write(page)
-
-    rss_items = []
-    for x in all_selected:
-        prefix = "[Mémoire] " if x["section"] == "memoires" else ("[Substack] " if x["section"] == "substack" else "")
-        desc = html.escape(x["analysis"])
-        pub = format_datetime(x["published"])
-        rss_items.append(f"""<item><title>{prefix}[{html.escape(x['region'])}] {html.escape(x['title'])}</title>
-        <link>{html.escape(x['link'])}</link><guid isPermaLink="false">{x['id']}</guid>
-        <pubDate>{pub}</pubDate><description>{desc}</description>
-        <category>{html.escape(x['theme'])}</category></item>""")
-
-    rss = f"""<?xml version="1.0" encoding="UTF-8"?>
-    <rss version="2.0"><channel><title>Observatoire — environnement et libertés civiles</title>
-    <link>{SITE_URL}</link><description>Veille quotidienne (Québec, Canada, États-Unis, Europe) sur l'environnement, les libertés civiles, mémoires parlementaires et Substack.</description>
-    <language>fr-ca</language><lastBuildDate>{format_datetime(now)}</lastBuildDate>
-    {''.join(rss_items)}</channel></rss>"""
-
-    with open(os.path.join(OUT, "feed.xml"), "w", encoding="utf-8") as fp:
-        fp.write(rss)
-
-    print(f"{len(selected_news)} actualités, {len(selected_memoires)} mémoires et {len(selected_substack)} billets Substack publiés; {len(failures)} flux en échec.")
-
-if __name__ == "__main__":
-    main()
