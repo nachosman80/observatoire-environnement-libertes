@@ -13,7 +13,7 @@ os.makedirs(OUT, exist_ok=True)
 SITE_URL = "https://nachosman80.github.io/observatoire-environnement-libertes/"
 MONTREAL_TZ = ZoneInfo("America/Toronto")
 HEADERS = {
-    "User-Agent": "ObservatoireCitoyen/1.3 (+https://github.com/nachosman80/observatoire-environnement-libertes)"
+    "User-Agent": "ObservatoireCitoyen/1.5 (+https://github.com/nachosman80/observatoire-environnement-libertes)"
 }
 
 KEYWORDS = {
@@ -23,20 +23,25 @@ KEYWORDS = {
         "justice environnementale", "justice climatique", "évaluation environnementale",
         "permis", "mine", "pipeline", "oléoduc", "changements climatiques", "bape",
         "pacte vert", "aires protégées", "gaz à effet de serre", "fossile", "nature",
+        "cqde", "mémoire", "commission parlementaire", "projet de loi", "recours collectif",
+        "injonction", "coalition", "lettre ouverte",
         "environmental", "climate", "pollution", "biodiversity", "ecosystem",
         "environmental justice", "climate litigation", "climate law", "emissions",
-        "carbon", "epa", "clean air", "clean water", "conservation", "fossil fuel"
+        "carbon", "epa", "clean air", "clean water", "conservation", "fossil fuel",
+        "climate lawsuit"
     ],
     "civil_liberties": [
         "vie privée", "liberté", "libertés civiles", "surveillance", "police",
         "reconnaissance faciale", "données personnelles", "protection des données",
         "caméra", "flock", "profilage", "droit fondamental", "droits fondamentaux",
         "charte", "manifestation", "liberté d'expression", "rgpd", "cedh",
-        "biométrique", "censure", "état d'urgence", "numérique",
+        "biométrique", "censure", "état d'urgence", "numérique", "ligue des droits",
+        "mémoire", "commission parlementaire", "projet de loi", "consultation particulière",
+        "action collective", "cour supérieure", "coalition",
         "privacy", "civil liberties", "facial recognition", "police surveillance",
         "data protection", "data privacy", "human rights", "flock cameras",
         "surveillance", "fourth amendment", "first amendment", "aclu", "gdpr",
-        "biometric", "digital rights", "free speech", "protest rights"
+        "biometric", "digital rights", "free speech", "protest rights", "constitutional challenge"
     ]
 }
 
@@ -91,6 +96,7 @@ Ne prétends pas avoir lu l'article complet si seul l'extrait est fourni. N'inve
 Signale les limites de l'information. Ce n'est pas un avis juridique.
 
 Titre : {item['title']}
+Type : {item['section']}
 Région : {item['region']}
 Source : {item['source']}
 Date : {item['date']}
@@ -118,11 +124,10 @@ Lien : {item['link']}"""
 def fallback(item):
     excerpt = item["summary"] or "Aucun résumé fourni par le flux source."
     return (f"**Résumé disponible :** {excerpt}\n\n"
-            "**Enjeu juridique et politique :** cet article a été retenu en raison de ses liens "
+            "**Enjeu juridique et politique :** ce document a été retenu en raison de ses liens "
             "avec le thème. Il faudra consulter la source originale pour identifier précisément "
-            "les règles applicables, les acteurs concernés et les conséquences.\n\n"
-            "**À surveiller :** vérifier les textes officiels, décisions ou documents cités "
-            "dans l'article.")
+            "les règles applicables, les recommandations formulées et les conséquences.\n\n"
+            "**À surveiller :** vérifier le suivi parlementaire, les textes officiels ou décisions cités.")
 
 def select_balanced(pool, per_theme_limit):
     pool.sort(key=lambda x: (x["score"], x["published"]), reverse=True)
@@ -140,12 +145,18 @@ def main():
     feeds = json.load(open(os.path.join(ROOT, "feeds.json"), encoding="utf-8"))
     now = datetime.now(timezone.utc)
     now_mtl = now.astimezone(MONTREAL_TZ)
-    news_pool, substack_pool, failures = [], [], []
+    news_pool, substack_pool, memoires_pool, failures = [], [], [], []
     seen = set()
 
     for f in feeds:
         section = f.get("section", "news")
-        max_age_days = 14 if section == "substack" else 5
+        if section == "memoires":
+            max_age_days = 30
+        elif section == "substack":
+            max_age_days = 14
+        else:
+            max_age_days = 5
+
         try:
             resp = requests.get(f["url"], headers=HEADERS, timeout=20)
             resp.raise_for_status()
@@ -196,7 +207,9 @@ def main():
                     "theme": theme,
                     "score": max(env, civ)
                 }
-                if section == "substack":
+                if section == "memoires":
+                    memoires_pool.append(item_obj)
+                elif section == "substack":
                     substack_pool.append(item_obj)
                 else:
                     news_pool.append(item_obj)
@@ -204,9 +217,10 @@ def main():
             print("Flux inaccessible:", f["name"], ex)
             failures.append(f["name"])
 
-    selected_news = select_balanced(news_pool, 8)
-    selected_substack = select_balanced(substack_pool, 6)
-    all_selected = selected_news + selected_substack
+    selected_news = select_balanced(news_pool, 9)
+    selected_substack = select_balanced(substack_pool, 7)
+    selected_memoires = select_balanced(memoires_pool, 7)
+    all_selected = selected_news + selected_substack + selected_memoires
 
     for item in all_selected:
         item["analysis"] = ai_summary(item) or fallback(item)
@@ -219,7 +233,12 @@ def main():
         badge_class = "badge-env" if is_env else "badge-civ"
         placeholder_class = "placeholder-env" if is_env else "placeholder-civ"
         icon = "🌿" if is_env else "⚖️"
-        section_badge = '<span class="badge badge-sub">✍️ Substack / Blogue</span>' if x["section"] == "substack" else ""
+
+        section_badge = ""
+        if x["section"] == "substack":
+            section_badge = '<span class="badge badge-sub">✍️ Substack / Blogue</span>'
+        elif x["section"] == "memoires":
+            section_badge = '<span class="badge badge-mem">🏛️ Mémoire / Commission</span>'
 
         if x["image"]:
             media_block = f"""<div class="card-media">
@@ -247,7 +266,7 @@ def main():
                 <p class="source">{html.escape(x['source'])}</p>
                 <div class="analysis">{format_analysis_html(x['analysis'])}</div>
                 <div class="card-footer">
-                    <a class="read-more" href="{html.escape(x['link'], quote=True)}" target="_blank" rel="noopener">Lire la publication originale <span>↗</span></a>
+                    <a class="read-more" href="{html.escape(x['link'], quote=True)}" target="_blank" rel="noopener">Consulter le document <span>↗</span></a>
                 </div>
             </div>
         </article>"""
@@ -289,6 +308,8 @@ def main():
     --civ-text: #1967d2;
     --sub-bg: #fff0e6;
     --sub-text: #c2410c;
+    --mem-bg: #f3e8ff;
+    --mem-text: #7e22ce;
     --warn-bg: #fff8e1;
     --warn-border: #ffe082;
     --warn-text: #7a5901;
@@ -310,6 +331,8 @@ def main():
     --civ-text: #79c0ff;
     --sub-bg: rgba(251, 146, 60, 0.18);
     --sub-text: #fb923c;
+    --mem-bg: rgba(168, 85, 247, 0.2);
+    --mem-text: #d8b4fe;
     --warn-bg: rgba(187, 128, 9, 0.15);
     --warn-border: rgba(187, 128, 9, 0.4);
     --warn-text: #e3b341;
@@ -406,10 +429,10 @@ def main():
 
   .main-tabs {{
     display: flex;
-    gap: 0.75rem;
+    gap: 0.5rem;
     border-bottom: 2px solid var(--border);
     margin: 1.5rem 0 1.25rem;
-    padding-bottom: 0;
+    overflow-x: auto;
   }}
 
   .tab-btn {{
@@ -417,8 +440,8 @@ def main():
     color: var(--text-muted);
     border: none;
     border-bottom: 3px solid transparent;
-    padding: 0.7rem 1.2rem;
-    font-size: 1rem;
+    padding: 0.7rem 1.1rem;
+    font-size: 0.96rem;
     font-weight: 700;
     cursor: pointer;
     margin-bottom: -2px;
@@ -426,6 +449,7 @@ def main():
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
+    white-space: nowrap;
   }}
 
   .tab-btn:hover {{
@@ -440,7 +464,7 @@ def main():
   .tab-count {{
     background: var(--border);
     color: var(--text);
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     padding: 0.12rem 0.5rem;
     border-radius: 999px;
   }}
@@ -511,7 +535,6 @@ def main():
   @media (max-width: 540px) {{
     .grid {{ grid-template-columns: 1fr; }}
     header {{ flex-direction: column; }}
-    .main-tabs {{ overflow-x: auto; }}
   }}
 
   .story {{
@@ -606,6 +629,7 @@ def main():
   .badge-env {{ background: var(--env-bg); color: var(--env-text); }}
   .badge-civ {{ background: var(--civ-bg); color: var(--civ-text); }}
   .badge-sub {{ background: var(--sub-bg); color: var(--sub-text); }}
+  .badge-mem {{ background: var(--mem-bg); color: var(--mem-text); }}
   .region-tag {{ font-weight: 600; color: var(--text); }}
 
   h2 {{
@@ -703,13 +727,16 @@ def main():
   <section class="intro">
     <div class="intro-text">
       <strong>Bulletin quotidien du {now_mtl.strftime('%d-%m-%Y')}</strong>
-      <p>Veille bilingue (FR/EN) croisant médias indépendants, organisations de défense climatique, droits civils et essais Substack.</p>
+      <p>Veille bilingue (FR/EN) croisant médias indépendants, organisations climatiques, mémoires parlementaires, essais Substack et radars de découverte.</p>
     </div>
   </section>
 
   <nav class="main-tabs" role="tablist">
     <button class="tab-btn active" role="tab" onclick="setSection('news', this)">
       📰 Actualités & Organisations <span class="tab-count">{len(selected_news)}</span>
+    </button>
+    <button class="tab-btn" role="tab" onclick="setSection('memoires', this)">
+      🏛️ Mémoires & Consultations <span class="tab-count">{len(selected_memoires)}</span>
     </button>
     <button class="tab-btn" role="tab" onclick="setSection('substack', this)">
       ✍️ Analyses & Substack <span class="tab-count">{len(selected_substack)}</span>
@@ -801,7 +828,7 @@ def main():
 
     rss_items = []
     for x in all_selected:
-        prefix = "[Substack] " if x["section"] == "substack" else ""
+        prefix = "[Mémoire] " if x["section"] == "memoires" else ("[Substack] " if x["section"] == "substack" else "")
         desc = html.escape(x["analysis"])
         pub = format_datetime(x["published"])
         rss_items.append(f"""<item><title>{prefix}[{html.escape(x['region'])}] {html.escape(x['title'])}</title>
@@ -811,14 +838,14 @@ def main():
 
     rss = f"""<?xml version="1.0" encoding="UTF-8"?>
     <rss version="2.0"><channel><title>Observatoire — environnement et libertés civiles</title>
-    <link>{SITE_URL}</link><description>Veille quotidienne (Québec, Canada, États-Unis, Europe) sur l'environnement, les libertés civiles et analyses Substack.</description>
+    <link>{SITE_URL}</link><description>Veille quotidienne (Québec, Canada, États-Unis, Europe) sur l'environnement, les libertés civiles, mémoires parlementaires et Substack.</description>
     <language>fr-ca</language><lastBuildDate>{format_datetime(now)}</lastBuildDate>
     {''.join(rss_items)}</channel></rss>"""
 
     with open(os.path.join(OUT, "feed.xml"), "w", encoding="utf-8") as fp:
         fp.write(rss)
 
-    print(f"{len(selected_news)} actualités et {len(selected_substack)} billets Substack publiés; {len(failures)} flux en échec.")
+    print(f"{len(selected_news)} actualités, {len(selected_memoires)} mémoires et {len(selected_substack)} billets Substack publiés; {len(failures)} flux en échec.")
 
 if __name__ == "__main__":
     main()

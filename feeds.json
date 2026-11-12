@@ -8,7 +8,7 @@
   },
   {
     "name": "Équiterre — défense environnementale",
-    "url": "https://www.equiterre.org/fr/rss.xml",
+    "url": "https://news.google.com/rss/search?q=site:equiterre.org+when:14d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "environment",
     "region": "Québec",
     "section": "news"
@@ -35,6 +35,13 @@
     "section": "news"
   },
   {
+    "name": "The Conversation Canada (FR) — recherche & droit",
+    "url": "https://theconversation.com/ca-fr/articles.atom",
+    "theme": "both",
+    "region": "Québec / Canada",
+    "section": "news"
+  },
+  {
     "name": "Ecojustice — droit de l'environnement (Canada)",
     "url": "https://ecojustice.ca/feed/",
     "theme": "environment",
@@ -43,7 +50,7 @@
   },
   {
     "name": "Fondation David Suzuki — climat et nature",
-    "url": "https://davidsuzuki.org/fr/feed/",
+    "url": "https://news.google.com/rss/search?q=site:davidsuzuki.org+when:14d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "environment",
     "region": "Canada",
     "section": "news"
@@ -57,7 +64,7 @@
   },
   {
     "name": "CCLA — Association canadienne des libertés civiles",
-    "url": "https://ccla.org/feed/",
+    "url": "https://news.google.com/rss/search?q=site:ccla.org+when:14d&hl=en-CA&gl=CA&ceid=CA:en",
     "theme": "civil_liberties",
     "region": "Canada",
     "section": "news"
@@ -71,7 +78,7 @@
   },
   {
     "name": "350.org — mouvement climatique international",
-    "url": "https://350.org/feed/",
+    "url": "https://news.google.com/rss/search?q=site:350.org+when:14d&hl=en-US&gl=US&ceid=US:en",
     "theme": "environment",
     "region": "États-Unis",
     "section": "news"
@@ -99,7 +106,7 @@
   },
   {
     "name": "ClientEarth — juristes pour la planète",
-    "url": "https://www.clientearth.org/latest/latest-updates/feed/",
+    "url": "https://news.google.com/rss/search?q=site:clientearth.org+when:14d&hl=en-GB&gl=GB&ceid=GB:en",
     "theme": "environment",
     "region": "Europe",
     "section": "news"
@@ -126,6 +133,20 @@
     "section": "news"
   },
   {
+    "name": "The Conversation France — recherche & société",
+    "url": "https://theconversation.com/fr/articles.atom",
+    "theme": "both",
+    "region": "Europe",
+    "section": "news"
+  },
+  {
+    "name": "Radar — Recours juridiques & Litiges climat/libertés",
+    "url": "https://news.google.com/rss/search?q=(%22recours+collectif%22+OR+%22action+collective%22+OR+%22injonction%22+OR+%22cour+sup%C3%A9rieure%22+OR+%22climate+lawsuit%22+OR+%22constitutional+challenge%22)+(climat+OR+environnement+OR+surveillance+OR+%22vie+priv%C3%A9e%22)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "both",
+    "region": "Québec / Canada",
+    "section": "news"
+  },
+  {
     "name": "Google Actualités — Québec & Canada (Environnement FR)",
     "url": "https://news.google.com/rss/search?q=(%22droit+de+l%27environnement%22+OR+%22changements+climatiques%22+OR+pollution+OR+biodiversit%C3%A9+OR+BAPE)+when:3d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "environment",
@@ -149,14 +170,14 @@
   },
   {
     "name": "The Crucial Years — Bill McKibben (Substack Climat)",
-    "url": "https://billmckibben.substack.com/feed",
+    "url": "https://news.google.com/rss/search?q=site:billmckibben.substack.com+when:14d&hl=en-US&gl=US&ceid=US:en",
     "theme": "environment",
     "region": "États-Unis",
     "section": "substack"
   },
   {
     "name": "The Planet — Eric Holthaus (Substack Climat)",
-    "url": "https://www.theplanet.earth/feed",
+    "url": "https://news.google.com/rss/search?q=site:theplanet.earth+when:14d&hl=en-US&gl=US&ceid=US:en",
     "theme": "environment",
     "region": "États-Unis",
     "section": "substack"
@@ -183,17 +204,60 @@
     "section": "substack"
   },
   {
-    "name": "Substack — Découvertes Environnement & Climat (FR/EN)",
-    "url": "https://news.google.com/rss/search?q=site:substack.com+(climat+OR+%C3%A9cologie+OR+%22climate+crisis%22+OR+%22environmental+justice%22)+when:14d&hl=fr&gl=CA&ceid=CA:fr",
-    "theme": "environment",
+    "name": "Radar — Blogues & essais indépendants (Substack/Medium/WP)",
+    "url": "https://news.google.com/rss/search?q=(site:substack.com+OR+site:medium.com+OR+site:wordpress.com)+(%22droit+de+l%27environnement%22+OR+%22justice+climatique%22+OR+%22libert%C3%A9s+civiles%22+OR+surveillance+OR+%22climate+litigation%22+OR+%22digital+rights%22)+when:14d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "both",
     "region": "Canada",
     "section": "substack"
   },
   {
-    "name": "Substack — Découvertes Libertés civiles & Surveillance (FR/EN)",
-    "url": "https://news.google.com/rss/search?q=site:substack.com+(%22civil+liberties%22+OR+%22vie+priv%C3%A9e%22+OR+surveillance+OR+%22digital+rights%22)+when:14d&hl=fr&gl=CA&ceid=CA:fr",
+    "name": "Hacker News — Veille Tech, Surveillance & Droit",
+    "url": "https://hnrss.org/newest?q=surveillance+OR+privacy+OR+%22climate+law%22+OR+%22facial+recognition%22",
     "theme": "civil_liberties",
-    "region": "Canada",
+    "region": "États-Unis",
     "section": "substack"
+  },
+
+  {
+    "name": "CQDE — Centre québécois du droit de l'environnement",
+    "url": "https://cqde.org/fr/feed/",
+    "theme": "environment",
+    "region": "Québec",
+    "section": "memoires"
+  },
+  {
+    "name": "Ligue des droits et libertés — Mémoires et avis",
+    "url": "https://liguedesdroits.ca/feed/",
+    "theme": "civil_liberties",
+    "region": "Québec",
+    "section": "memoires"
+  },
+  {
+    "name": "Radar — Nouveaux mémoires & coalitions citoyennes",
+    "url": "https://news.google.com/rss/search?q=(%22d%C3%A9pose+un+m%C3%A9moire%22+OR+%22notre+m%C3%A9moire%22+OR+%22coalition%22+OR+%22lettre+ouverte%22)+(environnement+OR+climat+OR+%22vie+priv%C3%A9e%22+OR+surveillance+OR+num%C3%A9rique)+when:14d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "both",
+    "region": "Québec",
+    "section": "memoires"
+  },
+  {
+    "name": "Assemblée nationale du Québec — Commissions & Mémoires",
+    "url": "https://news.google.com/rss/search?q=(site:assnat.qc.ca+OR+%22commission+parlementaire%22+OR+%22consultations+particuli%C3%A8res%22)+(%22m%C3%A9moire%22+OR+%22projet+de+loi%22)+(environnement+OR+climat+OR+%22vie+priv%C3%A9e%22+OR+%22libert%C3%A9s%22+OR+num%C3%A9rique)+when:30d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "both",
+    "region": "Québec",
+    "section": "memoires"
+  },
+  {
+    "name": "Barreau du Québec & CDPDJ — Mémoires et projets de loi",
+    "url": "https://news.google.com/rss/search?q=(site:barreau.qc.ca+OR+site:cdpdj.qc.ca)+(%22m%C3%A9moire%22+OR+%22projet+de+loi%22+OR+%22commission+parlementaire%22)+when:30d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "civil_liberties",
+    "region": "Québec",
+    "section": "memoires"
+  },
+  {
+    "name": "Parlement du Canada & BAPE — Consultations et mémoires",
+    "url": "https://news.google.com/rss/search?q=(site:noscommunes.ca+OR+site:sencanada.ca+OR+site:bape.gouv.qc.ca)+(%22m%C3%A9moire%22+OR+%22brief%22+OR+%22rapport%22)+when:30d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "both",
+    "region": "Canada",
+    "section": "memoires"
   }
 ]
