@@ -24,35 +24,56 @@
     "name": "La Presse — environnement",
     "url": "https://www.lapresse.ca/actualites/environnement/rss",
     "theme": "environment",
-    "region": "Québec / international",
+    "region": "Québec / Canada",
     "kind": "media"
   },
   {
-    "name": "Google Actualités — droit de l'environnement et climat",
-    "url": "https://news.google.com/rss/search?q=(droit+environnemental+OR+changements+climatiques+OR+pollution+OR+biodiversit%C3%A9)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
+    "name": "Google Actualités — Québec & Canada (Environnement FR)",
+    "url": "https://news.google.com/rss/search?q=(%22droit+de+l%27environnement%22+OR+%22changements+climatiques%22+OR+pollution+OR+biodiversit%C3%A9+OR+BAPE)+when:3d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "environment",
-    "region": "Québec / Canada / international",
+    "region": "Québec / Canada",
     "kind": "search"
   },
   {
-    "name": "Google Actualités — libertés civiles et vie privée",
-    "url": "https://news.google.com/rss/search?q=(libert%C3%A9s+civiles+OR+vie+priv%C3%A9e+OR+surveillance+polici%C3%A8re+OR+reconnaissance+faciale)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
+    "name": "Google Actualités — Québec & Canada (Libertés civiles FR)",
+    "url": "https://news.google.com/rss/search?q=(%22libert%C3%A9s+civiles%22+OR+%22vie+priv%C3%A9e%22+OR+%22surveillance+polici%C3%A8re%22+OR+%22reconnaissance+faciale%22+OR+%22droits+fondamentaux%22)+when:3d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "civil_liberties",
-    "region": "Québec / Canada / international",
+    "region": "Québec / Canada",
     "kind": "search"
   },
   {
-    "name": "Google Actualités — surveillance numérique et données",
-    "url": "https://news.google.com/rss/search?q=(Flock+cameras+OR+cam%C3%A9ras+de+surveillance+OR+protection+des+donn%C3%A9es+OR+surveillance+num%C3%A9rique)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
-    "theme": "civil_liberties",
-    "region": "Québec / Canada / international",
+    "name": "Google News — Canada (Environment & Civil Liberties EN)",
+    "url": "https://news.google.com/rss/search?q=(%22environmental+law%22+OR+%22climate+litigation%22+OR+%22civil+liberties%22+OR+%22privacy+rights%22+OR+%22facial+recognition%22)+when:3d&hl=en-CA&gl=CA&ceid=CA:en",
+    "theme": "both",
+    "region": "Canada",
     "kind": "search"
   },
   {
-    "name": "Google Actualités — environnement international",
-    "url": "https://news.google.com/rss/search?q=(climate+law+OR+environmental+justice+OR+climate+litigation+OR+environmental+law)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
+    "name": "Google News — USA (Environment & Climate Law)",
+    "url": "https://news.google.com/rss/search?q=(%22environmental+law%22+OR+%22climate+litigation%22+OR+EPA+regulation+OR+%22environmental+justice%22)+when:3d&hl=en-US&gl=US&ceid=US:en",
     "theme": "environment",
-    "region": "International",
+    "region": "États-Unis",
+    "kind": "search"
+  },
+  {
+    "name": "Google News — USA (Civil Liberties & Surveillance)",
+    "url": "https://news.google.com/rss/search?q=(%22civil+liberties%22+OR+%22Flock+cameras%22+OR+%22police+surveillance%22+OR+%22data+privacy%22+OR+%22Fourth+Amendment%22+OR+ACLU)+when:3d&hl=en-US&gl=US&ceid=US:en",
+    "theme": "civil_liberties",
+    "region": "États-Unis",
+    "kind": "search"
+  },
+  {
+    "name": "Google Actualités — Europe (Environnement & Climat FR)",
+    "url": "https://news.google.com/rss/search?q=(%22droit+de+l%27environnement%22+OR+%22justice+climatique%22+OR+CEDH+climat+OR+%22Pacte+vert%22)+when:3d&hl=fr&gl=FR&ceid=FR:fr",
+    "theme": "environment",
+    "region": "Europe",
+    "kind": "search"
+  },
+  {
+    "name": "Google Actualités — Europe (Libertés & Numérique FR/EN)",
+    "url": "https://news.google.com/rss/search?q=(RGPD+OR+GDPR+OR+CEDH+OR+%22surveillance+biom%C3%A9trique%22+OR+%22digital+rights%22+OR+%22AI+Act%22+privacy)+when:3d&hl=fr&gl=FR&ceid=FR:fr",
+    "theme": "civil_liberties",
+    "region": "Europe",
     "kind": "search"
   }
 ]
