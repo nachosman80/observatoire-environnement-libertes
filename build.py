@@ -245,7 +245,7 @@ def main():
 warning = ("<div class='warning'>⚠️ Flux temporairement indisponibles : " +
                ", ".join(html.escape(x) for x in failures) + "</div>") if failures else ""
 
-    page = f"""<!doctype html>
+page = f"""<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
