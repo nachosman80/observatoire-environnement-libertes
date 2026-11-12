@@ -1,13 +1,10 @@
-
 name: Publier la veille
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: "0 8 * * 2"
-      timezone: "America/Toronto"
-    - cron: "0 8 * * 5"
-      timezone: "America/Toronto"
+    # Tous les jours à 13:00 UTC (8:00 HNE / 9:00 HAE à Montréal)
+    - cron: '0 13 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,34 +12,38 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Récupérer le dépôt
         uses: actions/checkout@v4
 
-      - name: Installer Python
+      - name: Configurer Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.11'
 
       - name: Installer les dépendances
         run: pip install -r requirements.txt
 
-      - name: Construire le bulletin et le flux RSS
+      - name: Générer la veille
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
         run: python build.py
 
-      - name: Préparer GitHub Pages
+      - name: Configurer GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Préparer l'artefact Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: './docs'
 
-      - name: Publier
+      - name: Déployer sur GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4
