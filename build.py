@@ -81,30 +81,49 @@ def score(text, words):
     t = text.casefold()
     return sum(2 if len(w) > 12 and w in t else 1 for w in words if w in t)
 
+def detect_angle(text):
+    t = text.casefold()
+    angles = []
+    if any(w in t for w in ("projet de loi", "bill ", "règlement", "réglementation", "loi ", "décret", "law", "regulation")):
+        angles.append("📜 Législation / Réglementation")
+    if any(w in t for w in ("cour ", "tribunal", "recours", "jugement", "injonction", "litige", "lawsuit", "court", "ruling", "sued")):
+        angles.append("⚖️ Action en justice / Litige")
+    if any(w in t for w in ("mémoire", "consultation", "bape", "commission", "audience", "brief", "hearing")):
+        angles.append("🏛️ Consultation / Mémoire")
+    if any(w in t for w in ("manifestation", "coalition", "lettre ouverte", "grève", "mobilisation", "protest", "campaign")):
+        angles.append("✊ Mobilisation citoyenne")
+    if any(w in t for w in ("surveillance", "caméra", "données", "biométrique", "ia ", "algorithme", "privacy", "facial", "tracking")):
+        angles.append("👁️ Surveillance & Données")
+    return " · ".join(angles) if angles else "📰 Veille thématique"
+
+def extract_matched_keywords(text, theme):
+    t = text.casefold()
+    matched = [w.capitalize() for w in KEYWORDS[theme] if w in t]
+    # Garder les 5 mots-clés les plus pertinents sans doublons
+    unique = list(dict.fromkeys(matched))[:5]
+    return " · ".join(unique) if unique else "Thème général"
+
 def ai_summary(item):
     key = os.getenv("GEMINI_API_KEY")
     if not key:
         return None
     model = os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
-    prompt = f"""Tu es documentaliste juridique francophone. À partir uniquement des informations ci-dessous
-(même si elles sont en anglais, rédige entièrement en français), produis :
-1) **Résumé disponible :** un résumé factuel de 3 à 4 phrases;
-2) **Enjeu juridique et politique :** explique prudemment les questions de droit public, droits fondamentaux,
-responsabilité, réglementation ou politiques publiques que le sujet peut soulever;
-3) **À surveiller :** une question concrète ou une suite possible.
-Ne prétends pas avoir lu l'article complet si seul l'extrait est fourni. N'invente ni loi, ni jugement, ni citation.
-Signale les limites de l'information. Ce n'est pas un avis juridique.
+    prompt = f"""Tu es analyste en droit public, environnement et libertés civiles. À partir UNIQUEMENT des informations ci-dessous
+(rédige entièrement en français, même si la source est en anglais), sois ultra-concis, factuel et évite toute généralité vague :
+
+1) **L'essentiel :** résume les faits en 2 à 3 phrases directes.
+2) **Ce qui est en jeu :** identifie précisément l'impact concret (droits visés, territoire, technologie ou pouvoir en cause) et nomme l'institution, la loi ou l'acteur concerné s'ils apparaissent dans le texte. Pas de phrases creuses.
+3) **Levier ou suite :** indique la prochaine étape (audience, vote, décision attendue, consultation) ou ce qu'il faut vérifier dans l'article complet.
+
+N'invente rien. Si l'extrait est trop court pour déterminer un point, dis-le en une courte phrase.
 
 Titre : {item['title']}
-Type : {item['section']}
 Région : {item['region']}
 Source : {item['source']}
-Date : {item['date']}
-Extrait : {item['summary']}
-Lien : {item['link']}"""
+Extrait : {item['summary']}"""
     try:
         import time
-        time.sleep(2)  # Respecte la limite de requêtes par minute du niveau gratuit
+        time.sleep(2)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
         r = requests.post(
             url,
@@ -121,16 +140,19 @@ Lien : {item['link']}"""
             return text or None
         return None
     except Exception as e:
-        print("IA Gemini indisponible pour un article:", e)
+        print("IA Gemini indisponible:", e)
         return None
 
 def fallback(item):
-    excerpt = item["summary"] or "Aucun résumé fourni par le flux source."
-    return (f"**Résumé disponible :** {excerpt}\n\n"
-            "**Enjeu juridique et politique :** ce document a été retenu en raison de ses liens "
-            "avec le thème. Il faudra consulter la source originale pour identifier précisément "
-            "les règles applicables, les recommandations formulées et les conséquences.\n\n"
-            "**À surveiller :** vérifier le suivi parlementaire, les textes officiels ou décisions cités.")
+    full_text = f"{item['title']} {item['summary']}"
+    angle = detect_angle(full_text)
+    tags = extract_matched_keywords(full_text, item["theme"])
+    excerpt = item["summary"]
+    
+    lines = [f"**Nature :** {angle}", f"**Notions repérées :** {tags}"]
+    if excerpt and excerpt.lower() != item["title"].lower():
+        lines.append(f"**Extrait :** {excerpt}")
+    return "\n\n".join(lines)
 
 def select_balanced(pool, per_theme_limit):
     pool.sort(key=lambda x: (x["score"], x["published"]), reverse=True)
