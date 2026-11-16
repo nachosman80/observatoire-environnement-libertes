@@ -3,6 +3,7 @@ from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 from email.utils import format_datetime
 from calendar import timegm
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import feedparser
 import requests
 
@@ -10,11 +11,12 @@ ROOT = os.path.dirname(__file__)
 OUT = os.path.join(ROOT, "docs")
 os.makedirs(OUT, exist_ok=True)
 SEEN_FILE = os.path.join(OUT, "seen_ids.json")
+CACHE_FILE = os.path.join(OUT, "summaries_cache.json")
 
 SITE_URL = "https://nachosman80.github.io/observatoire-environnement-libertes/"
 MONTREAL_TZ = ZoneInfo("America/Toronto")
 HEADERS = {
-    "User-Agent": "ObservatoireCitoyen/1.7 (+https://github.com/nachosman80/observatoire-environnement-libertes)"
+    "User-Agent": "ObservatoireCitoyen/1.8 (+https://github.com/nachosman80/observatoire-environnement-libertes)"
 }
 
 KEYWORDS = {
@@ -46,16 +48,29 @@ KEYWORDS = {
     ]
 }
 
-def load_seen_ids():
-    if os.path.exists(SEEN_FILE):
+# Précompilation des expressions régulières pour un scoring rapide et précis
+KEYWORD_PATTERNS = {
+    theme: [
+        (
+            w,
+            2 if len(w) > 12 else 1,
+            re.compile(rf"\b{re.escape(w)}\b", re.IGNORECASE)
+            if len(w) <= 5
+            else re.compile(re.escape(w), re.IGNORECASE)
+        )
+        for w in words
+    ]
+    for theme, words in KEYWORDS.items()
+}
+
+def load_json_file(path, default):
+    if os.path.exists(path):
         try:
-            with open(SEEN_FILE, "r", encoding="utf-8") as fp:
-                data = json.load(fp)
-                if isinstance(data, list):
-                    return data, True
+            with open(path, "r", encoding="utf-8") as fp:
+                return json.load(fp), True
         except Exception as e:
-            print("Impossible de lire seen_ids.json:", e)
-    return [], False
+            print(f"Impossible de lire {os.path.basename(path)}:", e)
+    return default, False
 
 def save_seen_ids(existing_list, new_ids):
     seen_set = set(existing_list)
@@ -64,9 +79,21 @@ def save_seen_ids(existing_list, new_ids):
         if uid not in seen_set:
             updated.append(uid)
             seen_set.add(uid)
-    updated = updated[-1000:]
+    updated = updated[-1500:]
     with open(SEEN_FILE, "w", encoding="utf-8") as fp:
         json.dump(updated, fp, indent=2)
+
+def save_summaries_cache(cache_dict, active_ids):
+    # Garde les résumés actifs + les 500 plus récents pour éviter la croissance infinie
+    trimmed = {}
+    for uid in active_ids:
+        if uid in cache_dict:
+            trimmed[uid] = cache_dict[uid]
+    for uid, val in list(cache_dict.items())[-500:]:
+        if uid not in trimmed:
+            trimmed[uid] = val
+    with open(CACHE_FILE, "w", encoding="utf-8") as fp:
+        json.dump(trimmed, fp, ensure_ascii=False, indent=2)
 
 def clean(s):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", str(s or ""))).strip()
@@ -106,9 +133,8 @@ def format_analysis_html(text):
     escaped = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", escaped)
     return escaped.replace("\n", "<br>")
 
-def score(text, words):
-    t = text.casefold()
-    return sum(2 if len(w) > 12 and w in t else 1 for w in words if w in t)
+def score(text, theme):
+    return sum(weight for _, weight, pat in KEYWORD_PATTERNS[theme] if pat.search(text))
 
 def detect_angle(text):
     t = text.casefold()
@@ -126,8 +152,7 @@ def detect_angle(text):
     return " · ".join(angles) if angles else "📰 Veille thématique"
 
 def extract_matched_keywords(text, theme):
-    t = text.casefold()
-    matched = [w.capitalize() for w in KEYWORDS[theme] if w in t]
+    matched = [w.capitalize() for w, _, pat in KEYWORD_PATTERNS[theme] if pat.search(text)]
     unique = list(dict.fromkeys(matched))[:4]
     return " · ".join(unique) if unique else "Thème général"
 
@@ -150,13 +175,13 @@ Région : {item['region']}
 Source : {item['source']}
 Extrait : {item['summary']}"""
     try:
-        time.sleep(2)
+        time.sleep(1.5)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
         r = requests.post(
             url,
             headers={"Content-Type": "application/json"},
             json={"contents": [{"parts": [{"text": prompt}]}]},
-            timeout=60
+            timeout=45
         )
         r.raise_for_status()
         data = r.json()
@@ -192,27 +217,50 @@ def select_balanced(pool, per_theme_limit):
             out.append(civ_items[i])
     return out
 
+def fetch_single_feed(feed_cfg):
+    """Télécharge et parse un flux RSS de manière isolée pour exécution parallèle."""
+    try:
+        resp = requests.get(feed_cfg["url"], headers=HEADERS, timeout=12)
+        resp.raise_for_status()
+        parsed = feedparser.parse(resp.content)
+        if parsed.bozo and not parsed.entries:
+            return feed_cfg, None, "Flux vide ou invalide"
+        return feed_cfg, parsed.entries[:50], None
+    except Exception as ex:
+        return feed_cfg, None, str(ex)
+
 def main():
+    t_start = time.time()
     feeds = json.load(open(os.path.join(ROOT, "feeds.json"), encoding="utf-8"))
-    previous_ids_list, has_history = load_seen_ids()
+    previous_ids_list, has_history = load_json_file(SEEN_FILE, [])
+    if not isinstance(previous_ids_list, list):
+        previous_ids_list, has_history = [], False
     previous_ids_set = set(previous_ids_list)
+
+    summaries_cache, _ = load_json_file(CACHE_FILE, {})
+    if not isinstance(summaries_cache, dict):
+        summaries_cache = {}
 
     now = datetime.now(timezone.utc)
     now_mtl = now.astimezone(MONTREAL_TZ)
     news_pool, substack_pool, memoires_pool, failures = [], [], [], []
     seen = set()
 
-    for f in feeds:
-        section = f.get("section", "news")
-        max_age_days = 30 if section == "memoires" else (14 if section == "substack" else 5)
-        try:
-            resp = requests.get(f["url"], headers=HEADERS, timeout=20)
-            resp.raise_for_status()
-            parsed = feedparser.parse(resp.content)
-            if parsed.bozo and not parsed.entries:
+    # Téléchargement parallèle de tous les flux RSS (12 travailleurs simultanés)
+    with ThreadPoolExecutor(max_workers=12) as executor:
+        futures = [executor.submit(fetch_single_feed, f) for f in feeds]
+        for future in as_completed(futures):
+            f, entries, err = future.result()
+            if err or entries is None:
+                print("Flux inaccessible:", f["name"], err)
                 failures.append(f["name"])
                 continue
-            for e in parsed.entries[:50]:
+
+            section = f.get("section", "news")
+            max_age_days = 30 if section == "memoires" else (14 if section == "substack" else 5)
+            min_required = f.get("min_score", 1)
+
+            for e in entries:
                 link = e.get("link", "").strip()
                 title = clean(e.get("title"))
                 if not link or not title:
@@ -227,9 +275,9 @@ def main():
                     continue
                 summary = clean(e.get("summary") or e.get("description") or "")
                 text = f"{title} {summary}"
-                env = score(text, KEYWORDS["environment"]) + (2 if f.get("theme") == "environment" else 0)
-                civ = score(text, KEYWORDS["civil_liberties"]) + (2 if f.get("theme") == "civil_liberties" else 0)
-                if max(env, civ) < 1:
+                env = score(text, "environment") + (2 if f.get("theme") == "environment" else 0)
+                civ = score(text, "civil_liberties") + (2 if f.get("theme") == "civil_liberties" else 0)
+                if max(env, civ) < min_required:
                     continue
                 theme = "environment" if env >= civ else "civil_liberties"
                 pub_mtl = published.astimezone(MONTREAL_TZ)
@@ -254,17 +302,25 @@ def main():
                     substack_pool.append(item_obj)
                 else:
                     news_pool.append(item_obj)
-        except Exception as ex:
-            print("Flux inaccessible:", f["name"], ex)
-            failures.append(f["name"])
 
     selected_news = select_balanced(news_pool, 9)
     selected_substack = select_balanced(substack_pool, 7)
     selected_memoires = select_balanced(memoires_pool, 7)
     all_selected = selected_news + selected_substack + selected_memoires
 
+    ai_calls = 0
     for item in all_selected:
-        item["analysis"] = ai_summary(item) or fallback(item)
+        uid = item["id"]
+        if uid in summaries_cache:
+            item["analysis"] = summaries_cache[uid]
+        else:
+            ai_text = ai_summary(item)
+            if ai_text:
+                ai_calls += 1
+                summaries_cache[uid] = ai_text
+                item["analysis"] = ai_text
+            else:
+                item["analysis"] = fallback(item)
 
     def article_html(x):
         is_env = x["theme"] == "environment"
@@ -282,7 +338,7 @@ def main():
             section_badge = '<span class="badge badge-mem">🏛️ Mémoire / Commission</span>'
 
         if x["image"]:
-            media_block = f'<div class="card-media"><img src="{html.escape(x["image"], quote=True)}" alt="" loading="lazy" onerror="this.parentElement.classList.add(\'{placeholder_class}\'); this.outerHTML=\'<span class=\\\'placeholder-icon\\\'>{icon}</span><span class=\\\'placeholder-label\\\'>{html.escape(theme_label)}</span>\';"></div>'
+            media_block = f'<div class="card-media"><img src="{html.escape(x["image"], quote=True)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('{placeholder_class}'); this.outerHTML='<span class=\\'placeholder-icon\\'>{icon}</span><span class=\\'placeholder-label\\'>{html.escape(theme_label)}</span>';"></div>'
         else:
             media_block = f'<div class="card-media {placeholder_class}"><span class="placeholder-icon">{icon}</span><span class="placeholder-label">{html.escape(theme_label)}</span></div>'
 
@@ -340,10 +396,13 @@ def main():
     with open(os.path.join(OUT, "feed.xml"), "w", encoding="utf-8") as fp:
         fp.write(rss)
 
-    save_seen_ids(previous_ids_list, [x["id"] for x in all_selected])
+    active_ids = [x["id"] for x in all_selected]
+    save_seen_ids(previous_ids_list, active_ids)
+    save_summaries_cache(summaries_cache, active_ids)
 
+    elapsed = round(time.time() - t_start, 1)
     new_count = sum(1 for x in all_selected if x["is_new"])
-    print(f"{len(selected_news)} actualités, {len(selected_memoires)} mémoires et {len(selected_substack)} billets Substack publiés ({new_count} nouveaux); {len(failures)} flux en échec.")
+    print(f"Terminé en {elapsed}s : {len(selected_news)} actualités, {len(selected_memoires)} mémoires et {len(selected_substack)} billets Substack ({new_count} nouveaux, {ai_calls} appels Gemini); {len(failures)} flux en échec.")
 
 if __name__ == "__main__":
     main()
