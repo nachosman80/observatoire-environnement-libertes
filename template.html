@@ -7,8 +7,9 @@
 <link rel="alternate" type="application/rss+xml" title="Flux RSS" href="__SITE_URL__feed.xml">
 <script>
   (function() {
-    const saved = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var saved = null;
+    try { saved = localStorage.getItem('theme'); } catch (e) {}
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (saved === 'dark' || (!saved && prefersDark)) {
       document.documentElement.setAttribute('data-theme', 'dark');
     }
@@ -605,21 +606,21 @@
 </div>
 
 <script>
-  let currentSection = 'news';
-  let currentThemeFilter = 'all';
-  let currentStatusFilter = 'all';
+  var currentSection = 'news';
+  var currentThemeFilter = 'all';
+  var currentStatusFilter = 'all';
 
   function updateThemeButton() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const iconEl = document.getElementById('theme-icon');
-    const textEl = document.getElementById('theme-text');
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var iconEl = document.getElementById('theme-icon');
+    var textEl = document.getElementById('theme-text');
     if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
     if (textEl) textEl.textContent = isDark ? 'Mode jour' : 'Mode nuit';
   }
 
   function toggleTheme() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const next = isDark ? 'light' : 'dark';
+    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    var next = isDark ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     try { localStorage.setItem('theme', next); } catch (e) {}
     updateThemeButton();
@@ -627,14 +628,14 @@
 
   function setSection(section, btn) {
     currentSection = section;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
     if (btn) btn.classList.add('active');
     applyFilters();
   }
 
   function setThemeFilter(theme, btn) {
     currentThemeFilter = theme;
-    document.querySelectorAll('.filters button[data-filter]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filters button[data-filter]').forEach(function(b) { b.classList.remove('active'); });
     if (btn) btn.classList.add('active');
     applyFilters();
   }
@@ -645,8 +646,8 @@
       if (btn) btn.classList.remove('active');
     } else {
       currentStatusFilter = status;
-      const btnNew = document.getElementById('btn-filter-new');
-      const btnUnread = document.getElementById('btn-filter-unread');
+      var btnNew = document.getElementById('btn-filter-new');
+      var btnUnread = document.getElementById('btn-filter-unread');
       if (btnNew) btnNew.classList.remove('active');
       if (btnUnread) btnUnread.classList.remove('active');
       if (btn) btn.classList.add('active');
@@ -655,32 +656,32 @@
   }
 
   function applyFilters() {
-    const regionSelect = document.getElementById('region-filter');
-    const regionVal = regionSelect ? regionSelect.value : 'all';
-    let visibleCount = 0;
+    var regionSelect = document.getElementById('region-filter');
+    var regionVal = regionSelect ? regionSelect.value : 'all';
+    var visibleCount = 0;
 
-    document.querySelectorAll('.story').forEach(el => {
-      const section = el.dataset.section || 'news';
-      const theme = el.dataset.theme || '';
-      const region = el.dataset.region || '';
+    document.querySelectorAll('.story').forEach(function(el) {
+      var section = el.dataset.section || 'news';
+      var theme = el.dataset.theme || '';
+      var region = el.dataset.region || '';
 
-      const matchSection = (section === currentSection);
-      const matchTheme = (currentThemeFilter === 'all' || theme === currentThemeFilter);
-      const matchRegion = (regionVal === 'all' || region.includes(regionVal));
+      var matchSection = (section === currentSection);
+      var matchTheme = (currentThemeFilter === 'all' || theme === currentThemeFilter);
+      var matchRegion = (regionVal === 'all' || region.indexOf(regionVal) !== -1);
 
-      let matchStatus = true;
+      var matchStatus = true;
       if (currentStatusFilter === 'new') {
         matchStatus = (el.dataset.new === 'true' && !el.classList.contains('is-read'));
       } else if (currentStatusFilter === 'unread') {
         matchStatus = (!el.classList.contains('is-read'));
       }
 
-      const show = (matchSection && matchTheme && matchRegion && matchStatus);
+      var show = (matchSection && matchTheme && matchRegion && matchStatus);
       el.style.display = show ? 'flex' : 'none';
       if (show) visibleCount++;
     });
 
-    const emptyEl = document.getElementById('empty-state');
+    var emptyEl = document.getElementById('empty-state');
     if (emptyEl) emptyEl.style.display = (visibleCount === 0) ? 'block' : 'none';
   }
 
@@ -688,12 +689,165 @@
   applyFilters();
 
   try {
-    const CFG_KEY = "observatoire_private_gist_cfg";
-    const CACHE_KEY = "observatoire_private_read_map";
-    const GIST_FILENAME = "observatoire_lectures.json";
+    var CFG_KEY = "observatoire_private_gist_cfg";
+    var CACHE_KEY = "observatoire_private_read_map";
+    var GIST_FILENAME = "observatoire_lectures.json";
 
-    let readMap = {};
+    var readMap = {};
     try { readMap = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}"); } catch (e) {}
 
     function getConfig() {
       try { return JSON.parse(localStorage.getItem(CFG_KEY) || "{}"); } catch (e) { return {}; }
+    }
+
+    function setStatus(msg) {
+      var el = document.getElementById("sync-status");
+      if (el) el.textContent = msg;
+    }
+
+    function markCardAsRead(card) {
+      if (!card || card.classList.contains("is-read")) return;
+      card.classList.add("is-read");
+      card.dataset.read = "true";
+      var meta = card.querySelector(".meta");
+      if (meta && !meta.querySelector(".badge-read")) {
+        var badge = document.createElement("span");
+        badge.className = "badge badge-read";
+        badge.textContent = "✓ Lu";
+        meta.prepend(badge);
+      }
+    }
+
+    function applyReadState() {
+      document.querySelectorAll("article.story[data-id]").forEach(function(card) {
+        var id = card.getAttribute("data-id");
+        if (id && readMap[id]) markCardAsRead(card);
+      });
+      var btn = document.getElementById("private-sync-btn");
+      var count = Object.keys(readMap).length;
+      if (btn) btn.textContent = count > 0 ? ("🔒 Mes lectures (" + count + ")") : "🔒 Mes lectures";
+      applyFilters();
+    }
+
+    async function pullFromGist() {
+      var cfg = getConfig();
+      if (!cfg.gistId || !cfg.token) return;
+      setStatus("Synchronisation en cours…");
+      try {
+        var res = await fetch("https://api.github.com/gists/" + encodeURIComponent(cfg.gistId), {
+          headers: {
+            "Authorization": "Bearer " + cfg.token,
+            "Accept": "application/vnd.github+json"
+          }
+        });
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        var data = await res.json();
+        var file = data.files && data.files[GIST_FILENAME];
+        if (file && file.content) {
+          var remoteMap = JSON.parse(file.content);
+          readMap = Object.assign({}, remoteMap, readMap);
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify(readMap)); } catch (e) {}
+          applyReadState();
+        }
+        setStatus("Synchronisé (" + Object.keys(readMap).length + " articles lus).");
+      } catch (err) {
+        setStatus("Erreur de connexion au Gist privé.");
+        console.error(err);
+      }
+    }
+
+    async function pushToGist() {
+      var cfg = getConfig();
+      if (!cfg.gistId || !cfg.token) return;
+      try {
+        var filesPayload = {};
+        filesPayload[GIST_FILENAME] = { content: JSON.stringify(readMap, null, 2) };
+        await fetch("https://api.github.com/gists/" + encodeURIComponent(cfg.gistId), {
+          method: "PATCH",
+          headers: {
+            "Authorization": "Bearer " + cfg.token,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ files: filesPayload })
+        });
+        setStatus("Sauvegardé (" + Object.keys(readMap).length + " articles).");
+      } catch (err) {
+        setStatus("Sauvegarde locale uniquement (hors ligne).");
+        console.error(err);
+      }
+    }
+
+    document.querySelectorAll("article.story[data-id]").forEach(function(card) {
+      var id = card.getAttribute("data-id");
+      if (!id) return;
+      card.querySelectorAll("a[href]").forEach(function(link) {
+        var onConsult = function() {
+          if (!readMap[id]) {
+            readMap[id] = {
+              title: card.getAttribute("data-title") || "",
+              source: card.getAttribute("data-source") || "",
+              link: card.getAttribute("data-link") || "",
+              consulted_at: new Date().toISOString()
+            };
+            try { localStorage.setItem(CACHE_KEY, JSON.stringify(readMap)); } catch (e) {}
+            applyReadState();
+            pushToGist();
+          }
+        };
+        link.addEventListener("click", onConsult);
+        link.addEventListener("auxclick", function(e) {
+          if (e.button === 1) onConsult();
+        });
+      });
+    });
+
+    var btn = document.getElementById("private-sync-btn");
+    var panel = document.getElementById("private-sync-panel");
+    var idInput = document.getElementById("gist-id-input");
+    var tokenInput = document.getElementById("gist-token-input");
+
+    if (btn && panel && idInput && tokenInput) {
+      var existingCfg = getConfig();
+      if (existingCfg.gistId) idInput.value = existingCfg.gistId;
+      if (existingCfg.token) tokenInput.value = existingCfg.token;
+
+      btn.addEventListener("click", function() {
+        panel.style.display = (panel.style.display === "block") ? "none" : "block";
+      });
+
+      var saveBtn = document.getElementById("save-sync-cfg");
+      if (saveBtn) {
+        saveBtn.addEventListener("click", async function() {
+          var cfg = {
+            gistId: idInput.value.trim(),
+            token: tokenInput.value.trim()
+          };
+          try { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); } catch (e) {}
+          await pullFromGist();
+          await pushToGist();
+        });
+      }
+
+      var exportBtn = document.getElementById("export-read-json");
+      if (exportBtn) {
+        exportBtn.addEventListener("click", function() {
+          var blob = new Blob([JSON.stringify(readMap, null, 2)], { type: "application/json" });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement("a");
+          a.href = url;
+          a.download = "observatoire_lectures.json";
+          a.click();
+          URL.revokeObjectURL(url);
+        });
+      }
+    }
+
+    applyReadState();
+    pullFromGist();
+  } catch (err) {
+    console.error("Erreur module lectures privées :", err);
+  }
+</script>
+</body>
+</html>
