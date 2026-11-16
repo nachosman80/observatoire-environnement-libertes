@@ -4,7 +4,8 @@
     "url": "https://www.quebec.ca/fil-de-presse.rss",
     "theme": "both",
     "region": "Québec",
-    "section": "news"
+    "section": "news",
+    "min_score": 2
   },
   {
     "name": "Équiterre — défense environnementale",
@@ -35,6 +36,35 @@
     "section": "news"
   },
   {
+    "name": "La Presse — justice et faits divers (filtré droit/chartes)",
+    "url": "https://www.lapresse.ca/actualites/justice-et-faits-divers/rss",
+    "theme": "civil_liberties",
+    "region": "Québec / Canada",
+    "section": "news",
+    "min_score": 2
+  },
+  {
+    "name": "Le Devoir — environnement",
+    "url": "https://www.ledevoir.com/rss/section/environnement.xml",
+    "theme": "environment",
+    "region": "Québec / Canada",
+    "section": "news"
+  },
+  {
+    "name": "Commission d'accès à l'information du Québec (CAI)",
+    "url": "https://news.google.com/rss/search?q=site:cai.gouv.qc.ca+when:21d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "civil_liberties",
+    "region": "Québec",
+    "section": "news"
+  },
+  {
+    "name": "Amnistie internationale Canada francophone",
+    "url": "https://amnistie.ca/feed",
+    "theme": "civil_liberties",
+    "region": "Québec / Canada",
+    "section": "news"
+  },
+  {
     "name": "The Conversation Canada (FR) — recherche & droit",
     "url": "https://theconversation.com/ca-fr/articles.atom",
     "theme": "both",
@@ -50,7 +80,7 @@
   },
   {
     "name": "Fondation David Suzuki — climat et nature",
-    "url": "https://news.google.com/rss/search?q=site:davidsuzuki.org+when:14d&hl=fr&gl=CA&ceid=CA:fr",
+    "url": "https://davidsuzuki.org/fr/feed/",
     "theme": "environment",
     "region": "Canada",
     "section": "news"
@@ -63,9 +93,37 @@
     "section": "news"
   },
   {
+    "name": "Pembina Institute — énergie et politiques climatiques",
+    "url": "https://www.pembina.org/rss.xml",
+    "theme": "environment",
+    "region": "Canada",
+    "section": "news"
+  },
+  {
     "name": "CCLA — Association canadienne des libertés civiles",
-    "url": "https://news.google.com/rss/search?q=site:ccla.org+when:14d&hl=en-CA&gl=CA&ceid=CA:en",
+    "url": "https://ccla.org/feed/",
     "theme": "civil_liberties",
+    "region": "Canada",
+    "section": "news"
+  },
+  {
+    "name": "OpenMedia — droits numériques et vie privée (Canada)",
+    "url": "https://openmedia.org/feed",
+    "theme": "civil_liberties",
+    "region": "Canada",
+    "section": "news"
+  },
+  {
+    "name": "Commissariat à la protection de la vie privée (Canada)",
+    "url": "https://www.priv.gc.ca/fr/nouvelles/fil-rss/",
+    "theme": "civil_liberties",
+    "region": "Canada",
+    "section": "news"
+  },
+  {
+    "name": "CanLII Connects — commentaires de jurisprudence",
+    "url": "https://canliiconnects.org/fr/rss.xml",
+    "theme": "both",
     "region": "Canada",
     "section": "news"
   },
@@ -74,11 +132,12 @@
     "url": "https://api.io.canada.ca/io-server/gc/news/fr/v2?sort=publishedDate&orderBy=desc&pick=100&format=atom",
     "theme": "both",
     "region": "Canada",
-    "section": "news"
+    "section": "news",
+    "min_score": 2
   },
   {
-    "name": "350.org — mouvement climatique international",
-    "url": "https://news.google.com/rss/search?q=site:350.org+when:14d&hl=en-US&gl=US&ceid=US:en",
+    "name": "Earthjustice — litiges environnementaux (USA)",
+    "url": "https://earthjustice.org/feed",
     "theme": "environment",
     "region": "États-Unis",
     "section": "news"
@@ -91,13 +150,6 @@
     "section": "news"
   },
   {
-    "name": "EFF — Electronic Frontier Foundation",
-    "url": "https://www.eff.org/rss/updates.xml",
-    "theme": "civil_liberties",
-    "region": "États-Unis",
-    "section": "news"
-  },
-  {
     "name": "Grist — climat et justice environnementale",
     "url": "https://grist.org/feed/",
     "theme": "environment",
@@ -105,8 +157,37 @@
     "section": "news"
   },
   {
+    "name": "EFF — Electronic Frontier Foundation",
+    "url": "https://www.eff.org/rss/updates.xml",
+    "theme": "civil_liberties",
+    "region": "États-Unis",
+    "section": "news"
+  },
+  {
+    "name": "ACLU — American Civil Liberties Union",
+    "url": "https://www.aclu.org/feed",
+    "theme": "civil_liberties",
+    "region": "États-Unis",
+    "section": "news"
+  },
+  {
+    "name": "ProPublica — enquêtes surveillance & environnement",
+    "url": "https://www.propublica.org/feeds/propublica/main",
+    "theme": "both",
+    "region": "États-Unis",
+    "section": "news",
+    "min_score": 2
+  },
+  {
     "name": "ClientEarth — juristes pour la planète",
-    "url": "https://news.google.com/rss/search?q=site:clientearth.org+when:14d&hl=en-GB&gl=GB&ceid=GB:en",
+    "url": "https://www.clientearth.org/latest/latest-updates/feed/",
+    "theme": "environment",
+    "region": "Europe",
+    "section": "news"
+  },
+  {
+    "name": "Notre Affaire à Tous — justice climatique",
+    "url": "https://notreaffaireatous.org/feed/",
     "theme": "environment",
     "region": "Europe",
     "section": "news"
@@ -126,6 +207,20 @@
     "section": "news"
   },
   {
+    "name": "EDRi — European Digital Rights",
+    "url": "https://edri.org/feed/",
+    "theme": "civil_liberties",
+    "region": "Europe",
+    "section": "news"
+  },
+  {
+    "name": "Privacy International — surveillance et droits",
+    "url": "https://privacyinternational.org/rss.xml",
+    "theme": "civil_liberties",
+    "region": "Europe",
+    "section": "news"
+  },
+  {
     "name": "La Quadrature du Net — libertés numériques",
     "url": "https://www.laquadrature.net/feed/",
     "theme": "civil_liberties",
@@ -141,26 +236,55 @@
   },
   {
     "name": "Radar — Recours juridiques & Litiges climat/libertés",
-    "url": "https://news.google.com/rss/search?q=(%22recours+collectif%22+OR+%22action+collective%22+OR+%22injonction%22+OR+%22cour+sup%C3%A9rieure%22+OR+%22climate+lawsuit%22+OR+%22constitutional+challenge%22)+(climat+OR+environnement+OR+surveillance+OR+%22vie+priv%C3%A9e%22)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
+    "url": "https://news.google.com/rss/search?q=(%22recours+collectif%22+OR+%22action+collective%22+OR+%22injonction%22+OR+%22cour+sup%C3%A9rieure%22+OR+%22cour+d%27appel%22+OR+%22climate+lawsuit%22+OR+%22constitutional+challenge%22)+(climat+OR+environnement+OR+surveillance+OR+%22vie+priv%C3%A9e%22)+when:7d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "both",
     "region": "Québec / Canada",
     "section": "news"
   },
   {
     "name": "Google Actualités — Québec & Canada (Environnement FR)",
-    "url": "https://news.google.com/rss/search?q=(%22droit+de+l%27environnement%22+OR+%22changements+climatiques%22+OR+pollution+OR+biodiversit%C3%A9+OR+BAPE)+when:3d&hl=fr&gl=CA&ceid=CA:fr",
+    "url": "https://news.google.com/rss/search?q=(%22droit+de+l%27environnement%22+OR+%22changements+climatiques%22+OR+%22aires+prot%C3%A9g%C3%A9es%22+OR+biodiversit%C3%A9+OR+BAPE)+when:3d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "environment",
     "region": "Québec / Canada",
-    "section": "news"
+    "section": "news",
+    "min_score": 2
   },
   {
     "name": "Google Actualités — Québec & Canada (Libertés civiles FR)",
     "url": "https://news.google.com/rss/search?q=(%22libert%C3%A9s+civiles%22+OR+%22vie+priv%C3%A9e%22+OR+%22surveillance+polici%C3%A8re%22+OR+%22reconnaissance+faciale%22+OR+%22droits+fondamentaux%22)+when:3d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "civil_liberties",
     "region": "Québec / Canada",
-    "section": "news"
+    "section": "news",
+    "min_score": 2
   },
-
+  {
+    "name": "Unpointcinq — média de l'action climatique au Québec",
+    "url": "https://unpointcinq.ca/feed/",
+    "theme": "environment",
+    "region": "Québec",
+    "section": "substack"
+  },
+  {
+    "name": "Michael Geist — droit numérique et vie privée (Canada)",
+    "url": "https://www.michaelgeist.ca/feed/",
+    "theme": "civil_liberties",
+    "region": "Canada",
+    "section": "substack"
+  },
+  {
+    "name": "Option politique (IRPP) — politiques publiques",
+    "url": "https://policyoptions.irpp.org/fr/feed/",
+    "theme": "both",
+    "region": "Canada",
+    "section": "substack"
+  },
+  {
+    "name": "The Breach — enquêtes et analyses (Canada)",
+    "url": "https://breachmedia.ca/feed/",
+    "theme": "both",
+    "region": "Canada",
+    "section": "substack"
+  },
   {
     "name": "HEATED — Emily Atkin (Substack Climat)",
     "url": "https://heated.world/feed",
@@ -170,14 +294,14 @@
   },
   {
     "name": "The Crucial Years — Bill McKibben (Substack Climat)",
-    "url": "https://news.google.com/rss/search?q=site:billmckibben.substack.com+when:14d&hl=en-US&gl=US&ceid=US:en",
+    "url": "https://billmckibben.substack.com/feed",
     "theme": "environment",
     "region": "États-Unis",
     "section": "substack"
   },
   {
     "name": "The Planet — Eric Holthaus (Substack Climat)",
-    "url": "https://news.google.com/rss/search?q=site:theplanet.earth+when:14d&hl=en-US&gl=US&ceid=US:en",
+    "url": "https://www.theplanet.earth/feed",
     "theme": "environment",
     "region": "États-Unis",
     "section": "substack"
@@ -185,6 +309,20 @@
   {
     "name": "Tech Policy Press — Gouvernance & Libertés",
     "url": "https://www.techpolicy.press/feed/",
+    "theme": "civil_liberties",
+    "region": "États-Unis",
+    "section": "substack"
+  },
+  {
+    "name": "404 Media — enquêtes surveillance, données et IA",
+    "url": "https://www.404media.co/rss/",
+    "theme": "civil_liberties",
+    "region": "États-Unis",
+    "section": "substack"
+  },
+  {
+    "name": "Schneier on Security — surveillance et libertés",
+    "url": "https://www.schneier.com/feed/atom/",
     "theme": "civil_liberties",
     "region": "États-Unis",
     "section": "substack"
@@ -204,20 +342,19 @@
     "section": "substack"
   },
   {
+    "name": "Carbon Brief — analyses climat et droit (Europe)",
+    "url": "https://www.carbonbrief.org/feed/",
+    "theme": "environment",
+    "region": "Europe",
+    "section": "substack"
+  },
+  {
     "name": "Radar — Blogues & essais indépendants (Substack/Medium/WP)",
     "url": "https://news.google.com/rss/search?q=(site:substack.com+OR+site:medium.com+OR+site:wordpress.com)+(%22droit+de+l%27environnement%22+OR+%22justice+climatique%22+OR+%22libert%C3%A9s+civiles%22+OR+surveillance+OR+%22climate+litigation%22+OR+%22digital+rights%22)+when:14d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "both",
     "region": "Canada",
     "section": "substack"
   },
-  {
-    "name": "Hacker News — Veille Tech, Surveillance & Droit",
-    "url": "https://hnrss.org/newest?q=surveillance+OR+privacy+OR+%22climate+law%22+OR+%22facial+recognition%22",
-    "theme": "civil_liberties",
-    "region": "États-Unis",
-    "section": "substack"
-  },
-
   {
     "name": "CQDE — Centre québécois du droit de l'environnement",
     "url": "https://cqde.org/fr/feed/",
@@ -229,6 +366,27 @@
     "name": "Ligue des droits et libertés — Mémoires et avis",
     "url": "https://liguedesdroits.ca/feed/",
     "theme": "civil_liberties",
+    "region": "Québec",
+    "section": "memoires"
+  },
+  {
+    "name": "IRIS — Études et mémoires socioéconomiques (Québec)",
+    "url": "https://iris-recherche.qc.ca/feed/",
+    "theme": "both",
+    "region": "Québec",
+    "section": "memoires"
+  },
+  {
+    "name": "Eau Secours — protection de l'eau et mémoires",
+    "url": "https://eausecours.org/feed/",
+    "theme": "environment",
+    "region": "Québec",
+    "section": "memoires"
+  },
+  {
+    "name": "BAPE — Audiences publiques et rapports environnementaux",
+    "url": "https://news.google.com/rss/search?q=site:bape.gouv.qc.ca+when:30d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "environment",
     "region": "Québec",
     "section": "memoires"
   },
@@ -254,8 +412,15 @@
     "section": "memoires"
   },
   {
-    "name": "Parlement du Canada & BAPE — Consultations et mémoires",
-    "url": "https://news.google.com/rss/search?q=(site:noscommunes.ca+OR+site:sencanada.ca+OR+site:bape.gouv.qc.ca)+(%22m%C3%A9moire%22+OR+%22brief%22+OR+%22rapport%22)+when:30d&hl=fr&gl=CA&ceid=CA:fr",
+    "name": "Parlement du Canada — Comités et mémoires",
+    "url": "https://news.google.com/rss/search?q=(site:noscommunes.ca+OR+site:sencanada.ca)+(%22m%C3%A9moire%22+OR+%22brief%22+OR+%22comit%C3%A9%22)+(environnement+OR+climat+OR+%22vie+priv%C3%A9e%22+OR+surveillance+OR+charte)+when:30d&hl=fr&gl=CA&ceid=CA:fr",
+    "theme": "both",
+    "region": "Canada",
+    "section": "memoires"
+  },
+  {
+    "name": "Cour suprême du Canada & Décisions constitutionnelles",
+    "url": "https://news.google.com/rss/search?q=(site:scc-csc.ca+OR+%22Cour+supr%C3%AAme+du+Canada%22+OR+%22Supreme+Court+of+Canada%22)+(environnement+OR+climat+OR+charte+OR+%22vie+priv%C3%A9e%22+OR+surveillance)+when:30d&hl=fr&gl=CA&ceid=CA:fr",
     "theme": "both",
     "region": "Canada",
     "section": "memoires"
