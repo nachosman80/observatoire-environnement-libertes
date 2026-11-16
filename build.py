@@ -12,11 +12,12 @@ OUT = os.path.join(ROOT, "docs")
 os.makedirs(OUT, exist_ok=True)
 SEEN_FILE = os.path.join(OUT, "seen_ids.json")
 CACHE_FILE = os.path.join(OUT, "summaries_cache.json")
+WEEKLY_FILE = os.path.join(OUT, "bilan_hebdo.html")
 
 SITE_URL = "https://nachosman80.github.io/observatoire-environnement-libertes/"
 MONTREAL_TZ = ZoneInfo("America/Toronto")
 HEADERS = {
-    "User-Agent": "ObservatoireCitoyen/1.8 (+https://github.com/nachosman80/observatoire-environnement-libertes)"
+    "User-Agent": "ObservatoireCitoyen/1.9 (+https://github.com/nachosman80/observatoire-environnement-libertes)"
 }
 
 KEYWORDS = {
@@ -48,7 +49,6 @@ KEYWORDS = {
     ]
 }
 
-# Précompilation des expressions régulières pour un scoring rapide et précis
 KEYWORD_PATTERNS = {
     theme: [
         (
@@ -84,7 +84,6 @@ def save_seen_ids(existing_list, new_ids):
         json.dump(updated, fp, indent=2)
 
 def save_summaries_cache(cache_dict, active_ids):
-    # Garde les résumés actifs + les 500 plus récents pour éviter la croissance infinie
     trimmed = {}
     for uid in active_ids:
         if uid in cache_dict:
@@ -156,24 +155,11 @@ def extract_matched_keywords(text, theme):
     unique = list(dict.fromkeys(matched))[:4]
     return " · ".join(unique) if unique else "Thème général"
 
-def ai_summary(item):
+def call_gemini(prompt, timeout=50):
     key = os.getenv("GEMINI_API_KEY")
     if not key:
         return None
     model = os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
-    prompt = f"""Tu es analyste en droit public, environnement et libertés civiles. À partir UNIQUEMENT des informations ci-dessous
-(rédige entièrement en français, même si la source est en anglais), produis une fiche ULTRA-COURTE en 3 lignes maximum :
-
-**En bref :** [1 à 2 phrases factuelles maximum, 35 mots max]
-**Enjeu concret :** [1 phrase courte sur l'impact réel, la loi ou l'acteur concerné]
-**À suivre :** [1 question ou étape concrète en moins de 15 mots]
-
-N'invente rien.
-
-Titre : {item['title']}
-Région : {item['region']}
-Source : {item['source']}
-Extrait : {item['summary']}"""
     try:
         time.sleep(1.5)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
@@ -181,7 +167,7 @@ Extrait : {item['summary']}"""
             url,
             headers={"Content-Type": "application/json"},
             json={"contents": [{"parts": [{"text": prompt}]}]},
-            timeout=45
+            timeout=timeout
         )
         r.raise_for_status()
         data = r.json()
@@ -195,6 +181,23 @@ Extrait : {item['summary']}"""
         print("IA Gemini indisponible:", e)
         return None
 
+def ai_summary(item):
+    prompt = f"""Tu es professeur et analyste en droit public, droit de l'environnement et libertés civiles. À partir UNIQUEMENT des informations ci-dessous
+(rédige entièrement en français, même si la source est en anglais), produis une fiche d'apprentissage structurée en 4 lignes maximum :
+
+**En bref :** [1 à 2 phrases factuelles maximum, 35 mots max]
+**Fondements juridiques :** [Loi, Charte, compétence fédérale/provinciale, recours ou mécanisme procédural en jeu, 20 mots max]
+**Enjeu concret :** [1 phrase courte sur l'impact réel pour les droits, l'environnement ou l'action publique]
+**Angle critique :** [1 question de réflexion juridique ou citoyenne précise en moins de 18 mots]
+
+N'invente rien : si un texte de loi précis n'est pas mentionné, indique le domaine juridique général (ex. contrôle judiciaire, droit administratif, protection des renseignements personnels).
+
+Titre : {item['title']}
+Région : {item['region']}
+Source : {item['source']}
+Extrait : {item['summary']}"""
+    return call_gemini(prompt, timeout=45)
+
 def fallback(item):
     full_text = f"{item['title']} {item['summary']}"
     angle = detect_angle(full_text)
@@ -204,6 +207,74 @@ def fallback(item):
     if short_excerpt and short_excerpt.lower() != item["title"].lower():
         lines.append(f"**En bref :** {short_excerpt}")
     return "\n".join(lines)
+
+def generate_weekly_digest(all_items, now_mtl):
+    """Génère ou met à jour une synthèse hebdomadaire des grandes tendances (docs/bilan_hebdo.html)."""
+    should_refresh = (now_mtl.weekday() == 6) or (not os.path.exists(WEEKLY_FILE))
+    if not should_refresh:
+        return
+
+    lines_input = []
+    for x in all_items[:36]:
+        theme_fr = "Environnement" if x["theme"] == "environment" else "Libertés civiles"
+        lines_input.append(f"- [{theme_fr} | {x['region']} | {x['section']}] {x['title']} ({x['source']})")
+
+    corpus = "\n".join(lines_input)
+    prompt = f"""Tu es analyste en droit public, environnement et libertés civiles. Voici les principaux dossiers de la veille cette semaine :
+
+{corpus}
+
+Rédige en français une synthèse hebdomadaire claire et structurée pour consolider les acquis d'un étudiant en droit et citoyen engagé :
+
+### 1. Tendances majeures en environnement et climat (3 points clés)
+### 2. Tendances majeures en libertés civiles et numérique (3 points clés)
+### 3. Dossiers législatifs, mémoires et litiges à surveiller (2 à 3 points)
+### 4. Trois questions de synthèse pour réviser les enjeux de la semaine
+
+Sois factuel, précis sur les juridictions (Québec, Canada, États-Unis, Europe) et n'invente aucun fait absent de la liste."""
+
+    digest_md = call_gemini(prompt, timeout=60)
+    if not digest_md:
+        digest_md = (
+            "### Synthèse automatique indisponible\n"
+            "La synthèse hebdomadaire IA sera générée dès que l'API Gemini sera disponible.\n\n"
+            "### Dossiers retenus cette semaine\n" + corpus
+        )
+
+    # Conversion Markdown simple vers HTML propre
+    escaped = html.escape(digest_md)
+    escaped = re.sub(r"^### (.+)$", r"<h2>\1</h2>", escaped, flags=re.MULTILINE)
+    escaped = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", escaped)
+    escaped = escaped.replace("\n", "<br>")
+
+    stamp = html.escape(now_mtl.strftime("%d-%m-%Y à %H:%M (heure de Montréal)"))
+    weekly_html = f"""<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bilan hebdomadaire — Observatoire citoyen</title>
+<style>
+  body {{ font: 16px/1.65 system-ui, -apple-system, sans-serif; max-width: 820px; margin: 0 auto; padding: 2rem 1.25rem; color: #18202c; background: #f4f6f9; }}
+  .card {{ background: #ffffff; border: 1px solid #e1e6ed; border-radius: 16px; padding: 2rem; box-shadow: 0 4px 16px rgba(15,23,42,0.05); }}
+  h1 {{ margin-top: 0; font-size: 1.7rem; }}
+  h2 {{ color: #1456a0; font-size: 1.2rem; margin-top: 1.6rem; border-bottom: 1px solid #e1e6ed; padding-bottom: 0.35rem; }}
+  .back {{ display: inline-block; margin-bottom: 1rem; color: #1456a0; text-decoration: none; font-weight: 600; }}
+  .meta {{ color: #5a6678; font-size: 0.88rem; margin-bottom: 1.5rem; }}
+</style>
+</head>
+<body>
+  <a class="back" href="index.html">← Retour à la veille quotidienne</a>
+  <div class="card">
+    <h1>📊 Bilan hebdomadaire de l'Observatoire</h1>
+    <div class="meta">Mis à jour le {stamp}</div>
+    <div>{escaped}</div>
+  </div>
+</body>
+</html>"""
+
+    with open(WEEKLY_FILE, "w", encoding="utf-8") as fp:
+        fp.write(weekly_html)
 
 def select_balanced(pool, per_theme_limit):
     pool.sort(key=lambda x: (x["score"], x["published"]), reverse=True)
@@ -218,7 +289,6 @@ def select_balanced(pool, per_theme_limit):
     return out
 
 def fetch_single_feed(feed_cfg):
-    """Télécharge et parse un flux RSS de manière isolée pour exécution parallèle."""
     try:
         resp = requests.get(feed_cfg["url"], headers=HEADERS, timeout=12)
         resp.raise_for_status()
@@ -228,6 +298,24 @@ def fetch_single_feed(feed_cfg):
         return feed_cfg, parsed.entries[:50], None
     except Exception as ex:
         return feed_cfg, None, str(ex)
+
+def build_media_block(image_url, placeholder_class, icon, theme_label):
+    if not image_url:
+        return (
+            f'<div class="card-media {placeholder_class}">'
+            f'<span class="placeholder-icon">{icon}</span>'
+            f'<span class="placeholder-label">{html.escape(theme_label)}</span>'
+            f'</div>'
+        )
+    safe_img = html.escape(image_url, quote=True)
+    safe_label = html.escape(theme_label)
+    fallback_inner = f"<span class='placeholder-icon'>{icon}</span><span class='placeholder-label'>{safe_label}</span>"
+    onerror_js = f"this.parentElement.classList.add('{placeholder_class}'); this.outerHTML={json.dumps(fallback_inner)};"
+    return (
+        f'<div class="card-media">'
+        f'<img src="{safe_img}" alt="" loading="lazy" onerror="{html.escape(onerror_js, quote=True)}">'
+        f'</div>'
+    )
 
 def main():
     t_start = time.time()
@@ -246,7 +334,6 @@ def main():
     news_pool, substack_pool, memoires_pool, failures = [], [], [], []
     seen = set()
 
-    # Téléchargement parallèle de tous les flux RSS (12 travailleurs simultanés)
     with ThreadPoolExecutor(max_workers=12) as executor:
         futures = [executor.submit(fetch_single_feed, f) for f in feeds]
         for future in as_completed(futures):
@@ -337,10 +424,7 @@ def main():
         elif x["section"] == "memoires":
             section_badge = '<span class="badge badge-mem">🏛️ Mémoire / Commission</span>'
 
-        if x["image"]:
-            media_block = f'<div class="card-media"><img src="{html.escape(x["image"], quote=True)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('{placeholder_class}'); this.outerHTML='<span class=\\'placeholder-icon\\'>{icon}</span><span class=\\'placeholder-label\\'>{html.escape(theme_label)}</span>';"></div>'
-        else:
-            media_block = f'<div class="card-media {placeholder_class}"><span class="placeholder-icon">{icon}</span><span class="placeholder-label">{html.escape(theme_label)}</span></div>'
+        media_block = build_media_block(x["image"], placeholder_class, icon, theme_label)
 
         card_classes = "story is-new" if x["is_new"] else "story"
         new_attr = ' data-new="true"' if x["is_new"] else ""
@@ -399,6 +483,7 @@ def main():
     active_ids = [x["id"] for x in all_selected]
     save_seen_ids(previous_ids_list, active_ids)
     save_summaries_cache(summaries_cache, active_ids)
+    generate_weekly_digest(all_selected, now_mtl)
 
     elapsed = round(time.time() - t_start, 1)
     new_count = sum(1 for x in all_selected if x["is_new"])
