@@ -210,4 +210,490 @@
   [data-theme="dark"] .tab-btn.active .tab-count { color: #0d1117; }
 
   .toolbar {
-    display: flex
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1rem 0 1.5rem;
+  }
+
+  .filters {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filters button {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.42rem 0.95rem;
+    cursor: pointer;
+    font-size: 0.86rem;
+    font-weight: 600;
+    transition: all 0.18s ease;
+  }
+
+  .filters button:hover { border-color: var(--accent); }
+
+  .filters button.active {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+  }
+
+  [data-theme="dark"] .filters button.active { color: #0d1117; }
+
+  .filter-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    margin: 0 0.2rem;
+  }
+
+  .region-select {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.42rem 0.85rem;
+    font-size: 0.86rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 540px) {
+    .grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; }
+  }
+
+  .story {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+  }
+
+  .story:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--accent);
+  }
+
+  .story.is-new { border-left: 4px solid var(--new-border); }
+  .story.is-read { opacity: 0.72; border-left: 4px solid var(--read-border); }
+  .story.is-read:hover { opacity: 1; }
+  .story.is-read .badge-new { display: none; }
+
+  .media-link { display: block; text-decoration: none; }
+
+  .card-media {
+    width: 100%;
+    height: 185px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--border);
+  }
+
+  .card-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+  }
+
+  .story:hover .card-media img { transform: scale(1.03); }
+
+  .placeholder-env {
+    background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 55%, #40916c 100%);
+    color: #ffffff;
+  }
+
+  .placeholder-civ {
+    background: linear-gradient(135deg, #1e293b 0%, #1d4ed8 60%, #3b82f6 100%);
+    color: #ffffff;
+  }
+
+  .placeholder-icon {
+    font-size: 2.4rem;
+    margin-bottom: 0.35rem;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+  }
+
+  .placeholder-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0.9;
+  }
+
+  .card-body {
+    padding: 1.25rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+  }
+
+  .badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.76rem;
+  }
+
+  .badge-new { background: var(--new-bg); color: var(--new-text); border: 1px solid var(--new-border); }
+  .badge-read { background: var(--read-bg); color: var(--read-text); border: 1px solid var(--read-border); }
+  .badge-env { background: var(--env-bg); color: var(--env-text); }
+  .badge-civ { background: var(--civ-bg); color: var(--civ-text); }
+  .badge-sub { background: var(--sub-bg); color: var(--sub-text); }
+  .badge-mem { background: var(--mem-bg); color: var(--mem-text); }
+  .region-tag { font-weight: 600; color: var(--text); }
+
+  h2 {
+    font-size: 1.15rem;
+    line-height: 1.35;
+    margin: 0 0 0.35rem;
+    font-weight: 700;
+  }
+
+  h2 a { color: var(--text); text-decoration: none; }
+  h2 a:hover { color: var(--accent); }
+
+  .source {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin: 0 0 0.85rem;
+    font-style: italic;
+  }
+
+  .analysis {
+    font-size: 0.91rem;
+    line-height: 1.55;
+    color: var(--text);
+    border-top: 1px solid var(--border);
+    padding-top: 0.85rem;
+    flex-grow: 1;
+  }
+
+  .card-footer {
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--border);
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .read-more {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.88rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .read-more:hover { color: var(--accent-hover); text-decoration: underline; }
+
+  .warning {
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border: 1px solid var(--warn-border);
+    padding: 0.9rem 1.2rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2.5rem;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    color: var(--text-muted);
+    display: none;
+  }
+
+  footer {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  #private-sync-btn {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 999;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-hover);
+  }
+
+  #private-sync-panel {
+    display: none;
+    position: fixed;
+    bottom: 58px;
+    right: 16px;
+    z-index: 1000;
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 15px;
+    box-shadow: var(--shadow-hover);
+    font-size: 0.85rem;
+  }
+
+  #private-sync-panel label { display: block; font-weight: 600; font-size: 0.8rem; }
+
+  #private-sync-panel input {
+    width: 100%;
+    margin: 4px 0 10px;
+    padding: 7px 9px;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.82rem;
+  }
+
+  #private-sync-panel .panel-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  #private-sync-panel button {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  #private-sync-panel button.primary {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+  }
+
+  [data-theme="dark"] #private-sync-panel button.primary { color: #0d1117; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <h1>Observatoire citoyen</h1>
+      <p>Environnement · Libertés civiles · Droit public (Québec, Canada, États-Unis, Europe)</p>
+    </div>
+    <div class="header-actions">
+      <a class="btn-icon" href="feed.xml" title="Flux RSS">📡 Flux RSS</a>
+      <button class="btn-icon" id="theme-toggle" onclick="toggleTheme()" aria-label="Basculer le mode nuit">
+        <span id="theme-icon">🌙</span> <span id="theme-text">Mode nuit</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="intro">
+    <div class="intro-text">
+      <strong>Bulletin quotidien du __DATE_COURTE__</strong>
+      <p>Veille bilingue (FR/EN) croisant médias indépendants, organisations climatiques, mémoires parlementaires, essais Substack et radars de découverte.</p>
+    </div>
+  </section>
+
+  <nav class="main-tabs" role="tablist">
+    <button class="tab-btn active" role="tab" onclick="setSection('news', this)">
+      📰 Actualités & Organisations <span class="tab-count">__COUNT_NEWS__</span>
+    </button>
+    <button class="tab-btn" role="tab" onclick="setSection('memoires', this)">
+      🏛️ Mémoires & Consultations <span class="tab-count">__COUNT_MEMOIRES__</span>
+    </button>
+    <button class="tab-btn" role="tab" onclick="setSection('substack', this)">
+      ✍️ Analyses & Substack <span class="tab-count">__COUNT_SUBSTACK__</span>
+    </button>
+  </nav>
+
+  <div class="toolbar">
+    <div class="filters">
+      <button class="active" data-filter="all" onclick="setThemeFilter('all', this)">Tous les thèmes</button>
+      <button data-filter="environment" onclick="setThemeFilter('environment', this)">🌿 Environnement</button>
+      <button data-filter="civil_liberties" onclick="setThemeFilter('civil_liberties', this)">⚖️ Libertés civiles</button>
+      <span class="filter-divider" aria-hidden="true"></span>
+      <button id="btn-filter-new" onclick="toggleStatusFilter('new', this)">✨ Nouveaux</button>
+      <button id="btn-filter-unread" onclick="toggleStatusFilter('unread', this)">📖 Non lus</button>
+    </div>
+    <select class="region-select" id="region-filter" onchange="applyFilters()" aria-label="Filtrer par région">
+      <option value="all">🌍 Toutes les régions</option>
+      <option value="Québec">Québec</option>
+      <option value="Canada">Canada</option>
+      <option value="États-Unis">États-Unis</option>
+      <option value="Europe">Europe</option>
+    </select>
+  </div>
+
+  __WARNING__
+
+  <main class="grid" id="stories-grid">
+    __CARDS__
+    <div class="empty-state" id="empty-state">Aucune publication ne correspond à cette combinaison de filtres dans cet onglet.</div>
+  </main>
+
+  <footer>
+    Généré automatiquement le __STAMP__. Outil de veille documentaire — ne constitue pas un avis juridique.<br>
+    Vérifiez toujours les sources originales avant toute utilisation ou citation.
+  </footer>
+</div>
+
+<button id="private-sync-btn" type="button">🔒 Mes lectures</button>
+<div id="private-sync-panel">
+  <strong>Fichier privé des articles lus</strong>
+  <p style="margin:6px 0 10px;color:var(--text-muted);font-size:0.78rem;">
+    Stocké dans votre Gist secret GitHub (<code>observatoire_lectures.json</code>). Aucun visiteur ne peut y accéder.
+  </p>
+  <label for="gist-id-input">ID du Gist secret :</label>
+  <input id="gist-id-input" type="text" placeholder="ex. a1b2c3d4e5f6..." />
+  <label for="gist-token-input">Jeton GitHub (scope gist) :</label>
+  <input id="gist-token-input" type="password" placeholder="ghp_... ou github_pat_..." />
+  <div id="sync-status" style="margin-bottom:8px;font-size:0.78rem;color:var(--accent);"></div>
+  <div class="panel-actions">
+    <button type="button" class="primary" id="save-sync-cfg">Enregistrer & Synchroniser</button>
+    <button type="button" id="export-read-json">Télécharger .json</button>
+  </div>
+</div>
+
+<script>
+  let currentSection = 'news';
+  let currentThemeFilter = 'all';
+  let currentStatusFilter = 'all';
+
+  function updateThemeButton() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const iconEl = document.getElementById('theme-icon');
+    const textEl = document.getElementById('theme-text');
+    if (iconEl) iconEl.textContent = isDark ? '☀️' : '🌙';
+    if (textEl) textEl.textContent = isDark ? 'Mode jour' : 'Mode nuit';
+  }
+
+  function toggleTheme() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch (e) {}
+    updateThemeButton();
+  }
+
+  function setSection(section, btn) {
+    currentSection = section;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    applyFilters();
+  }
+
+  function setThemeFilter(theme, btn) {
+    currentThemeFilter = theme;
+    document.querySelectorAll('.filters button[data-filter]').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    applyFilters();
+  }
+
+  function toggleStatusFilter(status, btn) {
+    if (currentStatusFilter === status) {
+      currentStatusFilter = 'all';
+      if (btn) btn.classList.remove('active');
+    } else {
+      currentStatusFilter = status;
+      const btnNew = document.getElementById('btn-filter-new');
+      const btnUnread = document.getElementById('btn-filter-unread');
+      if (btnNew) btnNew.classList.remove('active');
+      if (btnUnread) btnUnread.classList.remove('active');
+      if (btn) btn.classList.add('active');
+    }
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const regionSelect = document.getElementById('region-filter');
+    const regionVal = regionSelect ? regionSelect.value : 'all';
+    let visibleCount = 0;
+
+    document.querySelectorAll('.story').forEach(el => {
+      const section = el.dataset.section || 'news';
+      const theme = el.dataset.theme || '';
+      const region = el.dataset.region || '';
+
+      const matchSection = (section === currentSection);
+      const matchTheme = (currentThemeFilter === 'all' || theme === currentThemeFilter);
+      const matchRegion = (regionVal === 'all' || region.includes(regionVal));
+
+      let matchStatus = true;
+      if (currentStatusFilter === 'new') {
+        matchStatus = (el.dataset.new === 'true' && !el.classList.contains('is-read'));
+      } else if (currentStatusFilter === 'unread') {
+        matchStatus = (!el.classList.contains('is-read'));
+      }
+
+      const show = (matchSection && matchTheme && matchRegion && matchStatus);
+      el.style.display = show ? 'flex' : 'none';
+      if (show) visibleCount++;
+    });
+
+    const emptyEl = document.getElementById('empty-state');
+    if (emptyEl) emptyEl.style.display = (visibleCount === 0) ? 'block' : 'none';
+  }
+
+  updateThemeButton();
+  applyFilters();
+
+  try {
+    const CFG_KEY = "observatoire_private_gist_cfg";
+    const CACHE_KEY = "observatoire_private_read_map";
+    const GIST_FILENAME = "observatoire_lectures.json";
+
+    let readMap = {};
+    try { readMap = JSON.parse(localStorage.getItem(CACHE_KEY) || "{}"); } catch (e) {}
+
+    function getConfig() {
+      try { return JSON.parse(localStorage.getItem(CFG_KEY) || "{}"); } catch (e) { return {}; }
