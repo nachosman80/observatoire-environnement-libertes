@@ -9,6 +9,7 @@ import requests
 ROOT = os.path.dirname(__file__)
 OUT = os.path.join(ROOT, "docs")
 os.makedirs(OUT, exist_ok=True)
+SEEN_FILE = os.path.join(OUT, "seen_ids.json")
 
 SITE_URL = "https://nachosman80.github.io/observatoire-environnement-libertes/"
 MONTREAL_TZ = ZoneInfo("America/Toronto")
@@ -44,6 +45,28 @@ KEYWORDS = {
         "biometric", "digital rights", "free speech", "protest rights", "constitutional challenge"
     ]
 }
+
+def load_seen_ids():
+    if os.path.exists(SEEN_FILE):
+        try:
+            with open(SEEN_FILE, "r", encoding="utf-8") as fp:
+                data = json.load(fp)
+                if isinstance(data, list):
+                    return data, True
+        except Exception as e:
+            print("Impossible de lire seen_ids.json:", e)
+    return [], False
+
+def save_seen_ids(existing_list, new_ids):
+    seen_set = set(existing_list)
+    updated = list(existing_list)
+    for uid in new_ids:
+        if uid not in seen_set:
+            updated.append(uid)
+            seen_set.add(uid)
+    updated = updated[-1000:]
+    with open(SEEN_FILE, "w", encoding="utf-8") as fp:
+        json.dump(updated, fp, indent=2)
 
 def clean(s):
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", str(s or ""))).strip()
@@ -171,6 +194,9 @@ def select_balanced(pool, per_theme_limit):
 
 def main():
     feeds = json.load(open(os.path.join(ROOT, "feeds.json"), encoding="utf-8"))
+    previous_ids_list, has_history = load_seen_ids()
+    previous_ids_set = set(previous_ids_list)
+
     now = datetime.now(timezone.utc)
     now_mtl = now.astimezone(MONTREAL_TZ)
     news_pool, substack_pool, memoires_pool, failures = [], [], [], []
@@ -219,7 +245,8 @@ def main():
                     "date": pub_mtl.strftime("%d/%m/%Y · %H:%M"),
                     "published": published,
                     "theme": theme,
-                    "score": max(env, civ)
+                    "score": max(env, civ),
+                    "is_new": has_history and (uid not in previous_ids_set)
                 }
                 if section == "memoires":
                     memoires_pool.append(item_obj)
@@ -246,6 +273,8 @@ def main():
         placeholder_class = "placeholder-env" if is_env else "placeholder-civ"
         icon = "🌿" if is_env else "⚖️"
 
+        new_badge = '<span class="badge badge-new">✨ Nouveau</span>' if x["is_new"] else ""
+
         section_badge = ""
         if x["section"] == "substack":
             section_badge = '<span class="badge badge-sub">✍️ Substack / Blogue</span>'
@@ -257,10 +286,14 @@ def main():
         else:
             media_block = f'<div class="card-media {placeholder_class}"><span class="placeholder-icon">{icon}</span><span class="placeholder-label">{html.escape(theme_label)}</span></div>'
 
-        return f"""<article class="story" data-section="{html.escape(x['section'])}" data-theme="{html.escape(x['theme'])}" data-region="{html.escape(x['region'])}">
+        card_classes = "story is-new" if x["is_new"] else "story"
+        new_attr = ' data-new="true"' if x["is_new"] else ""
+
+        return f"""<article class="{card_classes}" data-id="{html.escape(x['id'])}" data-title="{html.escape(x['title'], quote=True)}" data-source="{html.escape(x['source'], quote=True)}" data-link="{html.escape(x['link'], quote=True)}" data-section="{html.escape(x['section'])}" data-theme="{html.escape(x['theme'])}" data-region="{html.escape(x['region'])}"{new_attr}>
             <a href="{html.escape(x['link'], quote=True)}" target="_blank" rel="noopener" class="media-link" aria-hidden="true" tabindex="-1">{media_block}</a>
             <div class="card-body">
                 <div class="meta">
+                    {new_badge}
                     {section_badge}
                     <span class="badge {badge_class}">{html.escape(theme_label)}</span>
                     <span class="region-tag">📍 {html.escape(x['region'])}</span>
@@ -299,14 +332,18 @@ def main():
 
     rss_items = []
     for x in all_selected:
+        new_prefix = "[NOUVEAU] " if x["is_new"] else ""
         prefix = "[Mémoire] " if x["section"] == "memoires" else ("[Substack] " if x["section"] == "substack" else "")
-        rss_items.append(f"<item><title>{prefix}[{html.escape(x['region'])}] {html.escape(x['title'])}</title><link>{html.escape(x['link'])}</link><guid isPermaLink='false'>{x['id']}</guid><pubDate>{format_datetime(x['published'])}</pubDate><description>{html.escape(x['analysis'])}</description><category>{html.escape(x['theme'])}</category></item>")
+        rss_items.append(f"<item><title>{new_prefix}{prefix}[{html.escape(x['region'])}] {html.escape(x['title'])}</title><link>{html.escape(x['link'])}</link><guid isPermaLink='false'>{x['id']}</guid><pubDate>{format_datetime(x['published'])}</pubDate><description>{html.escape(x['analysis'])}</description><category>{html.escape(x['theme'])}</category></item>")
 
     rss = f'<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"><channel><title>Observatoire — environnement et libertés civiles</title><link>{SITE_URL}</link><description>Veille quotidienne (Québec, Canada, États-Unis, Europe).</description><language>fr-ca</language><lastBuildDate>{format_datetime(now)}</lastBuildDate>{"".join(rss_items)}</channel></rss>'
     with open(os.path.join(OUT, "feed.xml"), "w", encoding="utf-8") as fp:
         fp.write(rss)
 
-    print(f"{len(selected_news)} actualités, {len(selected_memoires)} mémoires et {len(selected_substack)} billets Substack publiés; {len(failures)} flux en échec.")
+    save_seen_ids(previous_ids_list, [x["id"] for x in all_selected])
+
+    new_count = sum(1 for x in all_selected if x["is_new"])
+    print(f"{len(selected_news)} actualités, {len(selected_memoires)} mémoires et {len(selected_substack)} billets Substack publiés ({new_count} nouveaux); {len(failures)} flux en échec.")
 
 if __name__ == "__main__":
     main()
